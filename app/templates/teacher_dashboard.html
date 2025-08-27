@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Giảng viên</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="header-container">
+        <h1>Dashboard Giảng viên</h1>
+        <div class="nav-links">
+            <a href="#" class="nav-link" onclick="logout()">Đăng xuất</a>
+        </div>
+    </div>
+    <div class="user-management-card">
+        <h2>Chào mừng, Giảng viên!</h2>
+        <p>Đây là khu vực quản lý khóa học của bạn.</p>
+        </div>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script>
+        // Kiểm tra token và vai trò người dùng
+        const token = localStorage.getItem('access_token');
+        const role = localStorage.getItem('user_role');
+        if (!token || role !== 'teacher') {
+            window.location.href = '/login';
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_role');
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>

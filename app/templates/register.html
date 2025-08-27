@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="user-management-card">
+        <h2>Đăng ký tài khoản mới</h2>
+        <form id="register-form">
+            <input type="text" id="username" placeholder="Tên đăng nhập" required>
+            <input type="password" id="password" placeholder="Mật khẩu" required>
+            <select id="role">
+                <option value="student">Sinh viên</option>
+                <option value="teacher">Giảng viên</option>
+            </select>
+            <button type="submit">Đăng ký</button>
+        </form>
+        <p>Đã có tài khoản? <a href="{{ url_for('frontend.login') }}">Đăng nhập</a></p>
+    </div>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, role })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert(data.message);
+                    window.location.href = '/login';
+                } else {
+                    alert('Đăng ký thất bại: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Lỗi khi gọi API:', error);
+                alert('Có lỗi xảy ra, vui lòng thử lại.');
+            }
+        });
+    </script>
+</body>
+</html>
