@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Sinh viên</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="header-container">
+        <h1>Chào mừng, Sinh viên!</h1>
+        <button onclick="logout()">Đăng xuất</button>
+    </div>
+
+    <div class="user-management-card">
+        <h2>Khóa học của tôi</h2>
+        <p>Đây là danh sách các khóa học bạn đã đăng ký.</p>
+        </div>
+
+    <script>
+        const role = localStorage.getItem('user_role');
+        if (role !== 'student') {
+            window.location.href = '/login';
+        }
+        
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_role');
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>
