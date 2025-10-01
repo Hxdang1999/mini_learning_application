@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chỉnh sửa Khóa học</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* CSS bổ sung chỉ cho trang này */
+        .card-edit-course {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #4f545c;
+            background-color: #40444b;
+            color: #ffffff;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-top: 0.5rem;
+        }
+        .form-check {
+            margin-bottom: 1rem;
+        }
+        .form-check input[type="checkbox"] {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body data-course-id="{{ course_id }}"> 
+    <div class="navbar-top">
+        <div class="navbar-container">
+            <h1 class="navbar-brand">Chỉnh sửa Khóa học ID: <span id="course-id-display"></span></h1> 
+            <div class="user-controls">
+                <button class="btn btn-primary" onclick="window.location.href='/teacher/dashboard'">Quay lại Dashboard</button>
+                <button class="btn btn-logout" onclick="logout()">Đăng xuất</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="card card-edit-course">
+            <h2>Thông tin Khóa học</h2>
+            <form id="edit-course-form">
+                <div class="form-group">
+                    <label for="course-title">Tiêu đề khóa học</label>
+                    <input type="text" id="course-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="course-description">Mô tả khóa học</label>
+                    <textarea id="course-description"></textarea>
+                </div>
+                <div class="form-group form-check">
+                    <input type="checkbox" id="is-public">
+                    <label for="is-public">Công khai (Sinh viên có thể tham gia ngay)</label>
+                </div>
+                <p>Ngày tạo: <span id="created-at-display">Đang tải...</span></p>
+                <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                <button type="button" class="btn btn-danger" id="delete-course-btn">Xóa Khóa học này</button>
+                <div id="message-container" style="margin-top: 15px; color: #7289da;"></div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/edit_course.js') }}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Lấy ID từ data attribute của thẻ body
+            const courseIdString = document.body.getAttribute('data-course-id'); 
+            const COURSE_ID = parseInt(courseIdString, 10);
+            
+            // 2. Kiểm tra và khởi tạo
+            if (typeof initEditCoursePage === 'function' && !isNaN(COURSE_ID)) {
+                // Gọi hàm khởi tạo với ID khóa học
+                initEditCoursePage(COURSE_ID);
+            } else {
+                console.error("Lỗi: Không tìm thấy hàm initEditCoursePage hoặc ID khóa học không hợp lệ.");
+                // Chuyển hướng về dashboard nếu không thể khởi tạo
+                alert("Lỗi tải trang. ID khóa học không hợp lệ.");
+                window.location.href = '/teacher/dashboard';
+            }
+        });
+    </script>
+</body>
+</html>
