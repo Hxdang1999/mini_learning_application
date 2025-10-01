@@ -95,3 +95,27 @@ class CourseService:
         if course.teacher_id != teacher_id:
             return {"message": "Forbidden"}, 403
         return {"message": f"Enrollment {'approved' if approve else 'rejected'}"}, 200
+    
+    # Phương thức mới: Lấy danh sách sinh viên active
+    def get_enrolled_students(self, teacher_id, course_id):
+        course = self.course_repo.get_by_id(course_id)
+        if not course or course.teacher_id != teacher_id:
+            return {"message": "Forbidden or course not found"}, 403
+        enrollments = self.course_repo.get_enrolled_students(course_id)
+        return [{
+            "id": e.id,
+            "student_id": e.student_id,
+            "student_username": self.auth_repo.get_user_by_id(e.student_id).username,
+            "enrolled_at": e.enrolled_at.strftime("%Y-%m-%d %H:%M:%S")
+        } for e in enrollments], 200
+
+    # Phương thức mới: Buộc rời sinh viên khỏi khóa học
+    def teacher_unenroll_student(self, teacher_id, enrollment_id):
+        enrollment = self.course_repo.get_enrollment_by_id(enrollment_id)  # Giả sử bạn thêm phương thức này
+        if not enrollment:
+            return {"message": "Enrollment not found"}, 404
+        course = self.course_repo.get_by_id(enrollment.course_id)
+        if course.teacher_id != teacher_id:
+            return {"message": "Forbidden"}, 403
+        self.course_repo.unenroll_student_from_course(enrollment)
+        return {"message": "Student unenrolled successfully"}, 200

@@ -1,9 +1,8 @@
-<!-- app/templates/edit_course.html (đã chỉnh sửa, thêm section cho materials) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Chỉnh sửa Khóa học</title>
+    <title>Quản lý chi tiết Khóa học</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         /* CSS bổ sung chỉ cho trang này */
@@ -39,7 +38,7 @@
 <body data-course-id="{{ course_id }}"> 
     <div class="navbar-top">
         <div class="navbar-container">
-            <h1 class="navbar-brand">Chỉnh sửa Khóa học ID: <span id="course-id-display"></span></h1> 
+            <h1 class="navbar-brand">Quản lý chi tiết Khóa học ID: <span id="course-id-display"></span></h1> 
             <div class="user-controls">
                 <button class="btn btn-primary" onclick="window.location.href='/teacher/dashboard'">Quay lại Dashboard</button>
                 <button class="btn btn-logout" onclick="logout()">Đăng xuất</button>
@@ -70,7 +69,7 @@
             </form>
         </div>
 
-        <!-- Section mới cho quản lý tài liệu học -->
+        <!-- Section cho quản lý tài liệu học (giữ nguyên nếu có) -->
         <div class="card card-materials mt-4">
             <h2>Quản lý Tài liệu học</h2>
             <form id="create-material-form">
@@ -99,6 +98,39 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Section mới: Danh sách sinh viên đợi duyệt (pending) -->
+        <div class="card card-pending-students mt-4" id="pending-students-section" style="display: none;">
+            <h2>Danh sách sinh viên đợi duyệt</h2>
+            <table id="pending-students-table" class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>ID Yêu cầu</th>
+                        <th>Sinh viên ID</th>
+                        <th>Ngày yêu cầu</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Section mới: Danh sách sinh viên tham gia chính thức (active) -->
+        <div class="card card-active-students mt-4">
+            <h2>Danh sách sinh viên tham gia chính thức</h2>
+            <table id="active-students-table" class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>ID Đăng ký</th>
+                        <th>Sinh viên ID</th>
+                        <th>Tên sinh viên</th>
+                        <th>Ngày tham gia</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
     
     <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
@@ -106,17 +138,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Lấy ID từ data attribute của thẻ body
             const courseIdString = document.body.getAttribute('data-course-id'); 
             const COURSE_ID = parseInt(courseIdString, 10);
-            
-            // 2. Kiểm tra và khởi tạo
             if (typeof initEditCoursePage === 'function' && !isNaN(COURSE_ID)) {
-                // Gọi hàm khởi tạo với ID khóa học
                 initEditCoursePage(COURSE_ID);
             } else {
                 console.error("Lỗi: Không tìm thấy hàm initEditCoursePage hoặc ID khóa học không hợp lệ.");
-                // Chuyển hướng về dashboard nếu không thể khởi tạo
                 alert("Lỗi tải trang. ID khóa học không hợp lệ.");
                 window.location.href = '/teacher/dashboard';
             }

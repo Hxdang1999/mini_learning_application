@@ -170,3 +170,23 @@ def lookup_course(course_id):
         "description": course.description,
         "is_public": course.is_public
     }), 200
+
+# Route mới: Lấy danh sách sinh viên active
+@course_bp.route('/<int:course_id>/enrolled-students', methods=['GET'])
+@jwt_required()
+def get_enrolled_students(course_id):
+    current_user = get_jwt_identity()
+    if current_user['role'] != 'teacher':
+        return jsonify({"message": "Only teachers can view enrolled students"}), 403
+    enrollments, status = course_service.get_enrolled_students(current_user['id'], course_id)
+    return jsonify(enrollments), status
+
+# Route mới: Buộc rời sinh viên khỏi khóa học
+@course_bp.route('/enrollments/<int:enrollment_id>/unenroll', methods=['DELETE'])
+@jwt_required()
+def teacher_unenroll(enrollment_id):
+    current_user = get_jwt_identity()
+    if current_user['role'] != 'teacher':
+        return jsonify({"message": "Only teachers can unenroll students"}), 403
+    response, status = course_service.teacher_unenroll_student(current_user['id'], enrollment_id)
+    return jsonify(response), status
