@@ -43,14 +43,26 @@ def get_teacher_courses():
     except Exception as e:
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
+# app/api/course_controller.py
 @course_bp.route('/<int:course_id>', methods=['GET'])
 @jwt_required()
 def get_course(course_id):
     current_user_info = get_jwt_identity()
     user_id = current_user_info['id']
-    course, status_code = course_service.get_course_details(course_id, user_id)
-    if status_code != 200:
-        return jsonify({"message": course["message"]}), status_code
+    user_role = current_user_info['role']
+    
+    course = course_service.course_repo.get_by_id(course_id)
+    if not course:
+        return jsonify({"message": "Course not found"}), 404
+    
+    if user_role == 'teacher' and course.teacher_id != user_id:
+        return jsonify({"message": "Forbidden. You are not the teacher of this course."}), 403
+    
+    if user_role == 'student':
+        enrollment = course_service.course_repo.get_enrollment(user_id, course_id)
+        if not enrollment or enrollment.status != 'active':
+            return jsonify({"message": "Forbidden. You are not enrolled or your enrollment is not active."}), 403
+    
     course_data = {
         "id": course.id,
         "title": course.title,

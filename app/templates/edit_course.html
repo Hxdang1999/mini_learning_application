@@ -5,8 +5,7 @@
     <title>Quản lý chi tiết Khóa học</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        /* CSS bổ sung chỉ cho trang này */
-        .card-edit-course {
+        .card-edit-course, .card-materials, .card-assignments, .card-pending-students, .card-active-students {
             max-width: 800px;
             margin: 2rem auto;
             padding: 2rem;
@@ -17,6 +16,7 @@
             font-weight: bold;
         }
         .form-group input[type="text"],
+        .form-group input[type="datetime-local"],
         .form-group textarea {
             width: 100%;
             padding: 10px;
@@ -33,12 +33,15 @@
         .form-check input[type="checkbox"] {
             margin-right: 10px;
         }
+        .stats {
+            font-style: italic;
+        }
     </style>
 </head>
-<body data-course-id="{{ course_id }}"> 
+<body data-course-id="{{ course_id }}">
     <div class="navbar-top">
         <div class="navbar-container">
-            <h1 class="navbar-brand">Quản lý chi tiết Khóa học ID: <span id="course-id-display"></span></h1> 
+            <h1 class="navbar-brand">Quản lý Khóa học ID: <span id="course-id-display"></span></h1>
             <div class="user-controls">
                 <button class="btn btn-primary" onclick="window.location.href='/teacher/dashboard'">Quay lại Dashboard</button>
                 <button class="btn btn-logout" onclick="logout()">Đăng xuất</button>
@@ -48,37 +51,36 @@
 
     <div class="main-container">
         <div class="card card-edit-course">
-            <h2>Thông tin Khóa học</h2>
+            <h2>Sửa Khóa học</h2>
             <form id="edit-course-form">
                 <div class="form-group">
-                    <label for="course-title">Tiêu đề khóa học</label>
+                    <label for="course-title">Tiêu đề</label>
                     <input type="text" id="course-title" required>
                 </div>
                 <div class="form-group">
-                    <label for="course-description">Mô tả khóa học</label>
+                    <label for="course-description">Mô tả</label>
                     <textarea id="course-description"></textarea>
                 </div>
-                <div class="form-group form-check">
+                <div class="form-check">
                     <input type="checkbox" id="is-public">
-                    <label for="is-public">Công khai (Sinh viên có thể tham gia ngay)</label>
+                    <label for="is-public">Công khai</label>
                 </div>
-                <p>Ngày tạo: <span id="created-at-display">Đang tải...</span></p>
-                <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
-                <button type="button" class="btn btn-danger" id="delete-course-btn">Xóa Khóa học này</button>
-                <div id="message-container" style="margin-top: 15px; color: #7289da;"></div>
+                <p><strong>Ngày tạo:</strong> <span id="created-at-display"></span></p>
+                <button type="submit" class="btn btn-primary">Cập nhật</button>
+                <button type="button" id="delete-course-btn" class="btn btn-danger">Xóa Khóa học</button>
             </form>
+            <div id="message-container" class="mt-3"></div>
         </div>
 
-        <!-- Section cho quản lý tài liệu học (giữ nguyên nếu có) -->
         <div class="card card-materials mt-4">
-            <h2>Quản lý Tài liệu học</h2>
+            <h2>Quản lý Tài liệu</h2>
             <form id="create-material-form">
                 <div class="form-group">
                     <label for="material-title">Tiêu đề tài liệu</label>
                     <input type="text" id="material-title" placeholder="Tiêu đề tài liệu" required>
                 </div>
                 <div class="form-group">
-                    <label for="material-content">Nội dung/Link tài liệu</label>
+                    <label for="material-content">Nội dung/Link</label>
                     <textarea id="material-content" placeholder="Nội dung hoặc link tài liệu"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">Thêm Tài liệu</button>
@@ -88,25 +90,22 @@
                     <tr>
                         <th>ID</th>
                         <th>Tiêu đề</th>
-                        <th>Nội dung</th>
+                        <th>Nội dung/Link</th>
                         <th>Ngày tạo</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Dữ liệu sẽ được load động bằng JS -->
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
 
-        <!-- Section mới: Danh sách sinh viên đợi duyệt (pending) -->
-        <div class="card card-pending-students mt-4" id="pending-students-section" style="display: none;">
-            <h2>Danh sách sinh viên đợi duyệt</h2>
+        <div class="card card-pending-students mt-4" id="pending-students-section">
+            <h2>Danh sách Sinh viên đợi duyệt</h2>
             <table id="pending-students-table" class="table mt-3">
                 <thead>
                     <tr>
-                        <th>ID Yêu cầu</th>
-                        <th>Sinh viên ID</th>
+                        <th>ID</th>
+                        <th>ID Sinh viên</th>
                         <th>Ngày yêu cầu</th>
                         <th>Thao tác</th>
                     </tr>
@@ -115,15 +114,14 @@
             </table>
         </div>
 
-        <!-- Section mới: Danh sách sinh viên tham gia chính thức (active) -->
         <div class="card card-active-students mt-4">
-            <h2>Danh sách sinh viên tham gia chính thức</h2>
+            <h2>Danh sách Sinh viên tham gia chính thức</h2>
             <table id="active-students-table" class="table mt-3">
                 <thead>
                     <tr>
-                        <th>ID Đăng ký</th>
-                        <th>Sinh viên ID</th>
-                        <th>Tên sinh viên</th>
+                        <th>ID</th>
+                        <th>ID Sinh viên</th>
+                        <th>Tên đăng nhập</th>
                         <th>Ngày tham gia</th>
                         <th>Thao tác</th>
                     </tr>
@@ -131,20 +129,70 @@
                 <tbody></tbody>
             </table>
         </div>
+
+        <div class="card card-assignments mt-4">
+            <h2>Quản lý Bài tập</h2>
+            <form id="create-assignment-form">
+                <div class="form-group">
+                    <label for="assignment-title">Tiêu đề bài tập</label>
+                    <input type="text" id="assignment-title" placeholder="Tiêu đề bài tập" required>
+                </div>
+                <div class="form-group">
+                    <label for="assignment-description">Mô tả bài tập</label>
+                    <textarea id="assignment-description" placeholder="Mô tả chi tiết bài tập"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="assignment-deadline">Hạn nộp (tùy chọn)</label>
+                    <input type="datetime-local" id="assignment-deadline">
+                </div>
+                <div class="form-group">
+                    <label for="assignment-max-score">Điểm tối đa</label>
+                    <input type="number" id="assignment-max-score" value="100" min="0" step="0.1" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Thêm Bài tập</button>
+            </form>
+            <table id="assignments-table" class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Mô tả</th>
+                        <th>Hạn nộp</th>
+                        <th>Điểm tối đa</th>
+                        <th>Thống kê</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <h3 class="mt-4">Bài nộp của sinh viên</h3>
+            <table id="submissions-table" class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Sinh viên</th>
+                        <th>Nội dung/Link</th>
+                        <th>Điểm</th>
+                        <th>Ngày nộp</th>
+                        <th>Chấm điểm</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
-    
+
     <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
     <script src="{{ url_for('static', filename='js/edit_course.js') }}"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const courseIdString = document.body.getAttribute('data-course-id'); 
-            const COURSE_ID = parseInt(courseIdString, 10);
-            if (typeof initEditCoursePage === 'function' && !isNaN(COURSE_ID)) {
-                initEditCoursePage(COURSE_ID);
+            const courseIdString = document.body.getAttribute('data-course-id');
+            const courseId = parseInt(courseIdString, 10);
+            if (typeof initEditCoursePage === 'function' && !isNaN(courseId)) {
+                initEditCoursePage(courseId);
             } else {
-                console.error("Lỗi: Không tìm thấy hàm initEditCoursePage hoặc ID khóa học không hợp lệ.");
-                alert("Lỗi tải trang. ID khóa học không hợp lệ.");
+                console.error('Lỗi: Không tìm thấy hàm initEditCoursePage hoặc ID khóa học không hợp lệ.');
+                alert('Lỗi tải trang. ID khóa học không hợp lệ.');
                 window.location.href = '/teacher/dashboard';
             }
         });
