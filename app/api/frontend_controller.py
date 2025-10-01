@@ -19,6 +19,12 @@ def register():
 def teacher_dashboard():
     return render_template('teacher_dashboard.html')
 
+# THÊM ROUTE NÀY VÀO ĐỂ HIỂN THỊ TRANG CHỈNH SỬA
+@frontend_bp.route('/teacher/courses/<int:course_id>') 
+def edit_course_page(course_id):
+    # Flask sẽ render template và truyền course_id vào
+    return render_template('edit_course.html', course_id=course_id)
+
 @frontend_bp.route('/student/dashboard')
 def student_dashboard():
     return render_template('student_dashboard.html')
