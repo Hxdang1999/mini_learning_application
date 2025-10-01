@@ -61,3 +61,17 @@ a {
     color: #7289da;
     text-decoration: none;
 }
+/* Định dạng cho thẻ select */
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #4f545c;
+    background-color: #40444b;
+    color: #ffffff;
+    border-radius: 5px;
+    box-sizing: border-box;
+    -webkit-appearance: none; /* Bỏ giao diện mặc định trên Webkit (Chrome, Safari) */
+    -moz-appearance: none;    /* Bỏ giao diện mặc định trên Mozilla (Firefox) */
+    appearance: none;         /* Bỏ giao diện mặc định */
+}

@@ -7,21 +7,19 @@
 </head>
 <body>
     <div class="header-container">
-        <h1>Dashboard Giảng viên</h1>
-        <div class="nav-links">
-            <a href="#" class="nav-link" onclick="logout()">Đăng xuất</a>
-        </div>
+        <h1>Chào mừng, Giảng viên!</h1>
+        <button onclick="logout()">Đăng xuất</button>
     </div>
+
     <div class="user-management-card">
-        <h2>Chào mừng, Giảng viên!</h2>
-        <p>Đây là khu vực quản lý khóa học của bạn.</p>
+        <h2>Quản lý Khóa học</h2>
+        <p>Đây là nơi bạn có thể tạo, chỉnh sửa và xóa các khóa học.</p>
         </div>
-    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+
     <script>
-        // Kiểm tra token và vai trò người dùng
-        const token = localStorage.getItem('access_token');
+        // Kiểm tra vai trò và token để bảo vệ trang
         const role = localStorage.getItem('user_role');
-        if (!token || role !== 'teacher') {
+        if (role !== 'teacher') {
             window.location.href = '/login';
         }
 
