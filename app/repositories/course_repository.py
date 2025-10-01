@@ -76,3 +76,10 @@ class CourseRepository:
             db.session.commit()
             return enrollment
         return None
+    
+    # Phương thức mới: Lấy danh sách sinh viên active cho khóa học
+    def get_enrolled_students(self, course_id):
+        return Enrollment.query.filter_by(course_id=course_id, status='active').all()
+    
+    def get_enrollment_by_id(self, enrollment_id):
+        return Enrollment.query.get(enrollment_id)
