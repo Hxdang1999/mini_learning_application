@@ -1,12 +1,14 @@
 # app/services/course_service.py
 from app.repositories.course_repository import CourseRepository
 from app.repositories.auth_repository import AuthRepository
+from app.repositories.assignment_repository import AssignmentRepository
 from app import db
 
 class CourseService:
     def __init__(self):
         self.course_repo = CourseRepository()
         self.auth_repo = AuthRepository()
+        self.assignment_repo = AssignmentRepository()
 
     def create_course(self, user_id, title, description, is_public=False):
         teacher = self.auth_repo.get_user_by_id(user_id)
@@ -119,3 +121,8 @@ class CourseService:
             return {"message": "Forbidden"}, 403
         self.course_repo.unenroll_student_from_course(enrollment)
         return {"message": "Student unenrolled successfully"}, 200
+    
+
+
+
+    

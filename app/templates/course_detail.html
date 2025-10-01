@@ -1,4 +1,3 @@
-<!-- app/templates/course_detail.html (file mới cho sinh viên xem chi tiết khóa học) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,11 +5,13 @@
     <title>Chi tiết Khóa học</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        /* CSS tương tự edit_course.html, nhưng read-only */
-        .card-course-detail {
+        .card-course-detail, .card-materials, .card-assignments {
             max-width: 800px;
             margin: 2rem auto;
             padding: 2rem;
+        }
+        .course-info p {
+            margin: 0.5rem 0;
         }
     </style>
 </head>
@@ -28,13 +29,14 @@
     <div class="main-container">
         <div class="card card-course-detail">
             <h2>Thông tin Khóa học</h2>
-            <p>Tiêu đề: <span id="course-title"></span></p>
-            <p>Mô tả: <span id="course-description"></span></p>
-            <p>Công khai: <span id="is-public"></span></p>
-            <p>Ngày tạo: <span id="created-at-display"></span></p>
+            <div class="course-info">
+                <p><strong>Tiêu đề:</strong> <span id="course-title">Đang tải...</span></p>
+                <p><strong>Mô tả:</strong> <span id="course-description">Đang tải...</span></p>
+                <p><strong>Công khai:</strong> <span id="is-public">Đang tải...</span></p>
+                <p><strong>Ngày tạo:</strong> <span id="created-at">Đang tải...</span></p>
+            </div>
         </div>
 
-        <!-- Section cho xem tài liệu học (read-only) -->
         <div class="card card-materials mt-4">
             <h2>Tài liệu học</h2>
             <table id="materials-table" class="table mt-3">
@@ -42,28 +44,44 @@
                     <tr>
                         <th>ID</th>
                         <th>Tiêu đề</th>
-                        <th>Nội dung</th>
+                        <th>Nội dung/Link</th>
                         <th>Ngày tạo</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Dữ liệu sẽ được load động bằng JS -->
-                </tbody>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="card card-assignments mt-4">
+            <h2>Bài tập</h2>
+            <table id="assignments-table" class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Mô tả</th>
+                        <th>Hạn nộp</th>
+                        <th>Điểm tối đa</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
             </table>
         </div>
     </div>
-    
-    <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/course_detail.js') }}"></script> <!-- Tạo file JS mới -->
 
+    <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/course_detail.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const courseIdString = document.body.getAttribute('data-course-id'); 
-            const COURSE_ID = parseInt(courseIdString, 10);
-            if (!isNaN(COURSE_ID)) {
-                initCourseDetailPage(COURSE_ID);
+            const courseIdString = document.body.getAttribute('data-course-id');
+            const courseId = parseInt(courseIdString, 10);
+            if (typeof initCourseDetailPage === 'function' && !isNaN(courseId)) {
+                initCourseDetailPage(courseId);
             } else {
-                alert("Lỗi tải trang.");
+                console.error('Lỗi: Không tìm thấy hàm initCourseDetailPage hoặc ID khóa học không hợp lệ.');
+                alert('Lỗi tải trang. ID khóa học không hợp lệ.');
                 window.location.href = '/student/dashboard';
             }
         });
