@@ -31,49 +31,27 @@ function checkAuthAndLoad() {
 }
 
 // Hàm hiển thị danh sách khóa học
+// app/static/js/teacher_dashboard.js
 function displayCourses(courses) {
-    const tableBody = document.querySelector('#courses-table tbody'); 
-    tableBody.innerHTML = ''; // Xóa nội dung cũ
-
+    const tableBody = document.querySelector('#courses-table tbody');
+    tableBody.innerHTML = '';
     if (!courses || courses.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5">Bạn chưa tạo khóa học nào.</td></tr>';
         return;
     }
-
     courses.forEach(c => {
         const row = tableBody.insertRow();
-        row.insertCell().textContent = c.id;
-
-        // Cột tiêu đề: rút gọn và thêm tooltip
-        const titleCell = row.insertCell();
-        if (c.title) {
-            const words = c.title.trim().split(/\s+/);
-            if (words.length > 2) {
-                titleCell.textContent = words.slice(0, 2).join(" ") + "...";
-                titleCell.title = c.title; // Tooltip mặc định
-            } else {
-                titleCell.textContent = c.title;
-            }
-        } else {
-            titleCell.textContent = "N/A";
-        }
-
-        row.insertCell().textContent = c.created_at || 'N/A';
-        row.insertCell().textContent = c.is_public ? 'Công khai' : 'Riêng tư';
-        
-        const actionsCell = row.insertCell();
-        const editBtn = document.createElement('button');
-        editBtn.className = 'btn btn-sm btn-primary';
-        editBtn.textContent = 'Sửa';
-        editBtn.onclick = () => editCourse(c.id);
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn btn-sm btn-danger';
-        deleteBtn.textContent = 'Xóa';
-        deleteBtn.onclick = () => deleteCourse(c.id);
-
-        actionsCell.appendChild(editBtn);
-        actionsCell.appendChild(deleteBtn);
+        row.innerHTML = `
+            <td>${c.id}</td>
+            <td>${c.title.length > 20 ? c.title.substring(0, 20) + '...' : c.title}</td>
+            <td>${c.created_at || 'N/A'}</td>
+            <td>${c.is_public ? 'Công khai' : 'Riêng tư'}</td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="editCourse(${c.id})">Sửa</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteCourse(${c.id})">Xóa</button>
+                <button class="btn btn-sm btn-info" onclick="fetchPendingEnrollments(${c.id})">Xem yêu cầu</button>
+            </td>
+        `;
     });
 }
 
@@ -165,6 +143,26 @@ async function deleteCourse(courseId) {
         }
     }
 }
+async function fetchRequests(courseId) {
+    const token = localStorage.getItem('access_token');
+    const res = await fetch(`${API_BASE_URL}/${courseId}/requests`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    console.log("Requests:", data);
+    // TODO: render ra modal/table cho giảng viên duyệt
+}
+
+async function handleRequestAction(requestId, action) {
+    const token = localStorage.getItem('access_token');
+    const res = await fetch(`${API_BASE_URL}/requests/${requestId}/${action}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    alert(data.message);
+}
+
 
 // Gắn sự kiện khi DOM được tải xong
 document.addEventListener('DOMContentLoaded', checkAuthAndLoad);

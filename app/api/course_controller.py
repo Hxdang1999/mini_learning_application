@@ -2,9 +2,12 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.course_service import CourseService
+from app.models.enrollment import Enrollment
+from app.repositories.auth_repository import AuthRepository
 
 course_bp = Blueprint('course_bp', __name__, url_prefix='/api/courses')
 course_service = CourseService()
+auth_repo = AuthRepository()
 
 @course_bp.route('/', methods=['POST'])
 @jwt_required()
@@ -15,12 +18,10 @@ def create_course():
     
     if user_role != 'teacher':
         return jsonify({"message": "Forbidden. Only teachers can create courses."}), 403
-
     data = request.get_json()
     title = data.get('title')
     description = data.get('description')
     is_public = data.get('is_public', False)
-    
     response, status_code = course_service.create_course(user_id, title, description, is_public)
     return jsonify(response), status_code
 
@@ -30,35 +31,26 @@ def get_teacher_courses():
     try:
         current_user_info = get_jwt_identity()
         user_id = current_user_info['id']
-        
         courses = course_service.get_teacher_courses(user_id)
-        # CẬP NHẬT: Thêm và format created_at
         courses_list = [{
             "id": c.id,
             "title": c.title,
-            "description": c.description, 
+            "description": c.description,
             "is_public": c.is_public,
-            "created_at": c.created_at.strftime('%Y-%m-%d %H:%M:%S') if c.created_at else 'N/A' 
+            "created_at": c.created_at.strftime('%Y-%m-%d %H:%M:%S') if c.created_at else 'N/A'
         } for c in courses]
-        
         return jsonify({"courses": courses_list}), 200
-        
     except Exception as e:
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
-# THÊM MỚI: API GET chi tiết khóa học
 @course_bp.route('/<int:course_id>', methods=['GET'])
 @jwt_required()
 def get_course(course_id):
     current_user_info = get_jwt_identity()
     user_id = current_user_info['id']
-    
     course, status_code = course_service.get_course_details(course_id, user_id)
-    
     if status_code != 200:
-        return jsonify({"message": course["message"]}), status_code # course là dict khi có lỗi
-    
-    # Format the course data for frontend
+        return jsonify({"message": course["message"]}), status_code
     course_data = {
         "id": course.id,
         "title": course.title,
@@ -68,23 +60,113 @@ def get_course(course_id):
     }
     return jsonify(course_data), 200
 
-# THÊM MỚI: API PUT cập nhật khóa học
 @course_bp.route('/<int:course_id>', methods=['PUT'])
 @jwt_required()
 def update_course(course_id):
     current_user_info = get_jwt_identity()
     user_id = current_user_info['id']
     data = request.get_json()
-    
     response, status_code = course_service.update_course(course_id, user_id, data)
     return jsonify(response), status_code
 
-# THÊM MỚI: API DELETE xóa khóa học
 @course_bp.route('/<int:course_id>', methods=['DELETE'])
 @jwt_required()
 def delete_course(course_id):
     current_user_info = get_jwt_identity()
     user_id = current_user_info['id']
-    
     response, status_code = course_service.delete_course(course_id, user_id)
     return jsonify(response), status_code
+
+@course_bp.route('/available', methods=['GET'])
+@jwt_required()
+def get_available_courses():
+    current_user_info = get_jwt_identity()
+    user_role = current_user_info['role']
+    student_id = current_user_info['id']
+    if user_role != 'student':
+        return jsonify({"message": "Forbidden. Only students can view available courses."}), 403
+    courses = course_service.get_available_courses(student_id)
+    courses_list = [{
+        "id": c.id,
+        "title": c.title,
+        "description": c.description,
+        "is_public": c.is_public
+    } for c in courses]
+    return jsonify({"courses": courses_list}), 200
+
+@course_bp.route('/<int:course_id>/enroll', methods=['POST'])
+@jwt_required()
+def enroll_course(course_id):
+    current_user_info = get_jwt_identity()
+    user_id = current_user_info['id']
+    user_role = current_user_info['role']
+    if user_role != 'student':
+        return jsonify({"message": "Forbidden. Only students can enroll in courses."}), 403
+    response, status_code = course_service.enroll_student(user_id, course_id)
+    return jsonify(response), status_code
+
+@course_bp.route('/enrolled', methods=['GET'])
+@jwt_required()
+def get_enrolled_courses():
+    current_user = get_jwt_identity()
+    if current_user['role'] != 'student':
+        return jsonify({"message": "Only students"}), 403
+    enrollments = Enrollment.query.filter_by(student_id=current_user['id']).all()
+    data = []
+    for e in enrollments:
+        data.append({
+            "id": e.course.id,
+            "title": e.course.title,
+            "teacher_username": auth_repo.get_user_by_id(e.course.teacher_id).username,
+            "is_public": e.course.is_public,
+            "status": e.status
+        })
+    return jsonify({"courses": data}), 200
+
+@course_bp.route('/<int:course_id>/unenroll', methods=['DELETE'])
+@jwt_required()
+def unenroll_course(course_id):
+    current_user_info = get_jwt_identity()
+    student_id = current_user_info['id']
+    user_role = current_user_info['role']
+    if user_role != 'student':
+        return jsonify({"message": "Forbidden. Only students can unenroll from courses."}), 403
+    response, status_code = course_service.unenroll_student(student_id, course_id)
+    return jsonify(response), status_code
+
+# Route mới: Lấy danh sách yêu cầu đăng ký pending
+@course_bp.route('/<int:course_id>/pending', methods=['GET'])
+@jwt_required()
+def get_pending_enrollments(course_id):
+    current_user = get_jwt_identity()
+    if current_user['role'] != 'teacher':
+        return jsonify({"message": "Only teachers can view pending enrollments"}), 403
+    enrollments, status = course_service.get_pending_enrollments(current_user['id'], course_id)
+    return jsonify(enrollments), status
+
+# Route mới: Duyệt/từ chối yêu cầu đăng ký
+@course_bp.route('/enrollments/<int:enrollment_id>/<string:action>', methods=['PUT'])
+@jwt_required()
+def handle_enrollment(enrollment_id, action):
+    current_user = get_jwt_identity()
+    if current_user['role'] != 'teacher':
+        return jsonify({"message": "Only teachers can handle enrollments"}), 403
+    approve = (action == "approve")
+    response, status = course_service.handle_enrollment(current_user['id'], enrollment_id, approve)
+    return jsonify(response), status
+
+@course_bp.route('/<int:course_id>/lookup', methods=['GET'])
+@jwt_required()
+def lookup_course(course_id):
+    current_user = get_jwt_identity()
+    if current_user['role'] != 'student':
+        return jsonify({"message": "Chỉ sinh viên mới có thể tra cứu khóa học"}), 403
+    course = course_service.course_repo.get_by_id(course_id)
+    if not course:
+        return jsonify({"message": "Không tìm thấy khóa học"}), 404
+    return jsonify({
+        "id": course.id,
+        "title": course.title,
+        "description": course.description,
+        "is_public": course.is_public
+    }), 200
