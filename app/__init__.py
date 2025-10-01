@@ -1,3 +1,4 @@
+# app/__init__.py
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
@@ -17,22 +18,21 @@ def create_app():
     db.init_app(app)
     jwt.init_app(app)
     
-    # --- IMPORT TẤT CẢ CÁC MODELS CẦN THIẾT ---
-    # Sau khi sửa user.py, dòng này sẽ hoạt động
+    # Import tất cả các models cần thiết
     from .models import user, course, enrollment, material, assignment 
     
     with app.app_context():
         db.create_all()
         
-    # --- ĐĂNG KÝ BLUEPRINTS ---
+    # Đăng ký blueprints SAU KHI db được khởi tạo
     from .api.auth_controller import auth_bp
     from .api.course_controller import course_bp
-    from .api.frontend_controller import frontend_bp # <-- DÒNG QUAN TRỌNG
+    from .api.frontend_controller import frontend_bp
+    from .api.material_controller import material_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(course_bp)
-    app.register_blueprint(frontend_bp)   # <-- Đăng ký Frontend để chạy được /
-    
- 
+    app.register_blueprint(frontend_bp)
+    app.register_blueprint(material_bp)
     
     return app

@@ -275,3 +275,33 @@ select {
     background-color: #4f545c;
     color: #ffffff;
 }
+/* Bố cục chia 2 cột cho student dashboard */
+.main-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 2rem;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.left-column, .right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Responsive: khi màn nhỏ thì xếp dọc */
+@media (max-width: 992px) {
+    .main-container {
+        flex-direction: column;
+    }
+}
+
+/* Điều chỉnh cột Tiêu đề rộng hơn */
+.table td:nth-child(2),
+.table th:nth-child(2) {
+    min-width: 200px; /* tăng chiều rộng tối thiểu */
+}

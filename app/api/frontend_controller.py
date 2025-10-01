@@ -1,3 +1,4 @@
+# app/api/frontend_controller.py (đã chỉnh sửa, thêm route cho course_detail)
 # app/api/frontend_controller.py
 from flask import Blueprint, render_template, redirect, url_for
 
@@ -19,12 +20,16 @@ def register():
 def teacher_dashboard():
     return render_template('teacher_dashboard.html')
 
-# THÊM ROUTE NÀY VÀO ĐỂ HIỂN THỊ TRANG CHỈNH SỬA
+# Route cho trang chỉnh sửa khóa học (giảng viên)
 @frontend_bp.route('/teacher/courses/<int:course_id>') 
 def edit_course_page(course_id):
-    # Flask sẽ render template và truyền course_id vào
     return render_template('edit_course.html', course_id=course_id)
 
 @frontend_bp.route('/student/dashboard')
 def student_dashboard():
     return render_template('student_dashboard.html')
+
+# Route mới cho trang chi tiết khóa học (sinh viên)
+@frontend_bp.route('/student/courses/<int:course_id>')
+def course_detail(course_id):
+    return render_template('course_detail.html', course_id=course_id)

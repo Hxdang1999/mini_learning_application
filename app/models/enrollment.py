@@ -7,7 +7,7 @@ class Enrollment(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
     enrolled_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    
+    status = db.Column(db.String(20), default='pending')
     course = db.relationship('Course', backref='enrollments', lazy=True) 
     
     # Đảm bảo một sinh viên chỉ có thể đăng ký một khóa học một lần

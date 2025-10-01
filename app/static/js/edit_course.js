@@ -1,138 +1,190 @@
-// app/static/js/edit_course.js
+// app/static/js/edit_course.js (đã chỉnh sửa, thêm đầy đủ code cho quản lý materials)
+// Giả sử file này đã có code cũ cho chỉnh sửa khóa học, thêm phần mới vào cuối
 
-const API_BASE_URL = '/api/courses';
-
-/**
- * Tải thông tin chi tiết của khóa học và điền vào form.
- * @param {number} courseId - ID của khóa học.
- */
-async function fetchCourseDetails(courseId) {
+// Hàm khởi tạo trang chỉnh sửa khóa học (code cũ, giữ nguyên)
+async function initEditCoursePage(courseId) {
     const token = localStorage.getItem('access_token');
-    if (!token) { window.location.href = '/login'; return; }
-    
-    document.getElementById('course-id-display').textContent = courseId;
-    document.getElementById('message-container').textContent = 'Đang tải thông tin...';
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/${courseId}`, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            document.getElementById('course-title').value = data.title;
-            document.getElementById('course-description').value = data.description;
-            document.getElementById('is-public').checked = data.is_public;
-            document.getElementById('created-at-display').textContent = data.created_at;
-            document.getElementById('message-container').textContent = ''; 
-        } else if (response.status === 403 || response.status === 404) {
-            alert(`Lỗi: ${data.message || "Không tìm thấy khóa học hoặc bạn không có quyền."}`);
-            window.location.href = '/teacher/dashboard';
-        } else {
-            alert('Lỗi khi tải chi tiết khóa học: ' + data.message);
-            window.location.href = '/teacher/dashboard';
-        }
-    } catch (error) {
-        console.error('Lỗi kết nối API:', error);
-        alert('Lỗi kết nối đến máy chủ.');
-        window.location.href = '/teacher/dashboard';
-    }
-}
-
-/**
- * Gửi yêu cầu cập nhật khóa học lên server.
- * @param {Event} event - Sự kiện submit form.
- * @param {number} courseId - ID của khóa học.
- */
-async function handleUpdateCourse(event, courseId) {
-    event.preventDefault();
-    const token = localStorage.getItem('access_token');
-    if (!token) return;
-
-    const title = document.getElementById('course-title').value;
-    const description = document.getElementById('course-description').value;
-    const is_public = document.getElementById('is-public').checked;
-
-    if (!title) {
-        alert("Tiêu đề không được để trống!");
+    if (!token) {
+        window.location.href = '/login';
         return;
     }
 
-    const messageContainer = document.getElementById('message-container');
-    messageContainer.textContent = 'Đang lưu...';
-
     try {
-        const response = await fetch(`${API_BASE_URL}/${courseId}`, {
-            method: 'PUT',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ title, description, is_public })
+        const response = await fetch(`/api/courses/${courseId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+        if (!response.ok) {
+            alert('Lỗi tải thông tin khóa học');
+            window.location.href = '/teacher/dashboard';
+            return;
+        }
         const data = await response.json();
         
-        if (response.ok) {
-            messageContainer.textContent = data.message;
-            // Xóa thông báo sau 3 giây
-            setTimeout(() => messageContainer.textContent = '', 3000); 
-        } else {
-            messageContainer.textContent = 'Cập nhật thất bại: ' + data.message;
-        }
+        document.getElementById('course-id-display').textContent = courseId;
+        document.getElementById('course-title').value = data.title;
+        document.getElementById('course-description').value = data.description || '';
+        document.getElementById('is-public').checked = data.is_public;
+        document.getElementById('created-at-display').textContent = data.created_at;
 
-    } catch (error) {
-        console.error('Lỗi khi cập nhật khóa học:', error);
-        messageContainer.textContent = 'Có lỗi xảy ra khi cập nhật. Vui lòng thử lại.';
+        // Load materials khi khởi tạo
+        loadMaterials(courseId);
+    } catch (err) {
+        console.error('Lỗi:', err);
+        alert('Lỗi kết nối');
+    }
+
+    // Gắn event cho form chỉnh sửa khóa học (code cũ)
+    document.getElementById('edit-course-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('course-title').value;
+        const description = document.getElementById('course-description').value;
+        const is_public = document.getElementById('is-public').checked;
+
+        try {
+            const res = await fetch(`/api/courses/${courseId}`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ title, description, is_public })
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (res.ok) {
+                // Reload trang hoặc cập nhật
+                initEditCoursePage(courseId);
+            }
+        } catch (err) {
+            alert('Lỗi cập nhật khóa học');
+        }
+    });
+
+    // Event xóa khóa học (code cũ)
+    document.getElementById('delete-course-btn').addEventListener('click', async () => {
+        if (confirm('Xác nhận xóa khóa học?')) {
+            try {
+                const res = await fetch(`/api/courses/${courseId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                alert(data.message);
+                if (res.ok) {
+                    window.location.href = '/teacher/dashboard';
+                }
+            } catch (err) {
+                alert('Lỗi xóa khóa học');
+            }
+        }
+    });
+}
+
+// Phần mới: Quản lý materials
+
+async function loadMaterials(courseId) {
+    const token = localStorage.getItem('access_token');
+    try {
+        const response = await fetch(`/api/materials/${courseId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) {
+            alert('Lỗi tải tài liệu');
+            return;
+        }
+        const data = await response.json();
+        const tbody = document.querySelector('#materials-table tbody');
+        tbody.innerHTML = '';
+        data.materials.forEach(m => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${m.id}</td>
+                <td>${m.title}</td>
+                <td>${m.content.substring(0, 50)}...</td> <!-- Rút gọn nội dung -->
+                <td>${m.created_at}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="editMaterial(${m.id}, '${m.title}', '${m.content.replace(/'/g, "\\'")}')">Sửa</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteMaterial(${m.id}, ${courseId})">Xóa</button>
+                </td>
+            `;
+        });
+    } catch (err) {
+        console.error('Lỗi tải materials:', err);
     }
 }
 
-/**
- * Xử lý việc xóa khóa học.
- * @param {number} courseId - ID của khóa học.
- */
-async function deleteCourseFromEditPage(courseId) {
-    if (confirm('Bạn có chắc chắn muốn XÓA khóa học này? Hành động này không thể hoàn tác!')) {
-        const token = localStorage.getItem('access_token');
-        if (!token) return;
+document.getElementById('create-material-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const courseId = parseInt(document.body.getAttribute('data-course-id'), 10);
+    const title = document.getElementById('material-title').value;
+    const content = document.getElementById('material-content').value;
+    const token = localStorage.getItem('access_token');
 
+    try {
+        const response = await fetch(`/api/materials/${courseId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ title, content })
+        });
+        const data = await response.json();
+        alert(data.message);
+        if (response.ok) {
+            document.getElementById('create-material-form').reset();
+            loadMaterials(courseId);
+        }
+    } catch (err) {
+        alert('Lỗi tạo tài liệu');
+    }
+});
+
+function editMaterial(materialId, currentTitle, currentContent) {
+    const newTitle = prompt('Chỉnh sửa tiêu đề:', currentTitle);
+    const newContent = prompt('Chỉnh sửa nội dung:', currentContent);
+    if (newTitle && newContent) {
+        updateMaterial(materialId, newTitle, newContent);
+    }
+}
+
+async function updateMaterial(materialId, title, content) {
+    const courseId = parseInt(document.body.getAttribute('data-course-id'), 10);
+    const token = localStorage.getItem('access_token');
+    try {
+        const response = await fetch(`/api/materials/${materialId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ title, content })
+        });
+        const data = await response.json();
+        alert(data.message);
+        if (response.ok) {
+            loadMaterials(courseId);
+        }
+    } catch (err) {
+        alert('Lỗi cập nhật tài liệu');
+    }
+}
+
+async function deleteMaterial(materialId, courseId) {
+    if (confirm('Xác nhận xóa tài liệu?')) {
+        const token = localStorage.getItem('access_token');
         try {
-            const response = await fetch(`${API_BASE_URL}/${courseId}`, {
+            const response = await fetch(`/api/materials/${materialId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
-            
             alert(data.message);
             if (response.ok) {
-                // Chuyển hướng về dashboard sau khi xóa thành công
-                window.location.href = '/teacher/dashboard';
+                loadMaterials(courseId);
             }
-        } catch (error) {
-            console.error('Lỗi khi xóa:', error);
-            alert('Lỗi xảy ra trong quá trình xóa.');
+        } catch (err) {
+            alert('Lỗi xóa tài liệu');
         }
-    }
-}
-
-/**
- * Hàm khởi tạo chính, được gọi khi DOM đã sẵn sàng.
- * @param {number} courseId - ID của khóa học được truyền từ Flask.
- */
-function initEditCoursePage(courseId) {
-    fetchCourseDetails(courseId);
-    
-    const form = document.getElementById('edit-course-form');
-    if (form) {
-        // Gắn sự kiện submit form, truyền courseId
-        form.addEventListener('submit', (event) => handleUpdateCourse(event, courseId));
-    }
-
-    const deleteButton = document.getElementById('delete-course-btn');
-    if (deleteButton) {
-        // Gắn sự kiện click nút xóa
-        deleteButton.addEventListener('click', () => deleteCourseFromEditPage(courseId));
     }
 }

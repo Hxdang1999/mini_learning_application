@@ -1,0 +1,72 @@
+<!-- app/templates/course_detail.html (file mới cho sinh viên xem chi tiết khóa học) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết Khóa học</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* CSS tương tự edit_course.html, nhưng read-only */
+        .card-course-detail {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body data-course-id="{{ course_id }}">
+    <div class="navbar-top">
+        <div class="navbar-container">
+            <h1 class="navbar-brand">Chi tiết Khóa học ID: <span id="course-id-display"></span></h1>
+            <div class="user-controls">
+                <button class="btn btn-primary" onclick="window.location.href='/student/dashboard'">Quay lại Dashboard</button>
+                <button class="btn btn-logout" onclick="logout()">Đăng xuất</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="card card-course-detail">
+            <h2>Thông tin Khóa học</h2>
+            <p>Tiêu đề: <span id="course-title"></span></p>
+            <p>Mô tả: <span id="course-description"></span></p>
+            <p>Công khai: <span id="is-public"></span></p>
+            <p>Ngày tạo: <span id="created-at-display"></span></p>
+        </div>
+
+        <!-- Section cho xem tài liệu học (read-only) -->
+        <div class="card card-materials mt-4">
+            <h2>Tài liệu học</h2>
+            <table id="materials-table" class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Nội dung</th>
+                        <th>Ngày tạo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu sẽ được load động bằng JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/course_detail.js') }}"></script> <!-- Tạo file JS mới -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const courseIdString = document.body.getAttribute('data-course-id'); 
+            const COURSE_ID = parseInt(courseIdString, 10);
+            if (!isNaN(COURSE_ID)) {
+                initCourseDetailPage(COURSE_ID);
+            } else {
+                alert("Lỗi tải trang.");
+                window.location.href = '/student/dashboard';
+            }
+        });
+    </script>
+</body>
+</html>

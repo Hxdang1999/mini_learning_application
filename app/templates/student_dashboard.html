@@ -1,31 +1,86 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Sinh viên</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Bảng điều khiển - Sinh viên</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <div class="header-container">
-        <h1>Chào mừng, Sinh viên!</h1>
-        <button onclick="logout()">Đăng xuất</button>
+    <!-- Navbar -->
+    <div class="navbar-top">
+        <div class="navbar-container">
+            <div class="user-greeting">
+                Xin chào, <span id="username-display"></span>
+            </div>
+            <div class="user-controls">
+                <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+            </div>
+        </div>
     </div>
 
-    <div class="user-management-card">
-        <h2>Khóa học của tôi</h2>
-        <p>Đây là danh sách các khóa học bạn đã đăng ký.</p>
+    <!-- Nội dung chính -->
+    <div class="main-container">
+        <!-- Cột trái -->
+        <div class="left-column">
+            <!-- Tìm khóa học -->
+            <div class="card">
+                <h2>Tìm khóa học theo ID</h2>
+                <div class="form-group">
+                    <input type="number" id="search-course-id" placeholder="Nhập ID khóa học">
+                </div>
+                <button class="btn btn-primary" onclick="lookupCourse()">Tìm</button>
+                <div id="lookup-result" class="mt-3"></div>
+            </div>
+
+            <!-- Khóa học có thể đăng ký -->
+            <div class="card">
+                <h2>Khóa học có thể đăng ký</h2>
+                <table id="available-courses-list" class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tiêu đề</th>
+                            <th>Mô tả</th>
+                            <th>Công khai</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="5">Đang tải...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
+        <!-- Cột phải -->
+        <div class="right-column">
+            <!-- Khóa học đã đăng ký -->
+            <div class="card">
+                <h2>Khóa học đã đăng ký</h2>
+                <table id="enrolled-courses-list" class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tiêu đề</th>
+                            <th>Giảng viên</th>
+                            <th>Công khai</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="5">Đang tải...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="/static/js/student_dashboard.js"></script>
     <script>
-        const role = localStorage.getItem('user_role');
-        if (role !== 'student') {
-            window.location.href = '/login';
-        }
-        
         function logout() {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('user_role');
-            window.location.href = '/login';
+            localStorage.clear();
+            window.location.href = "/login";
         }
     </script>
 </body>

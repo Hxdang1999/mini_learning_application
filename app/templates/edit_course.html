@@ -1,3 +1,4 @@
+<!-- app/templates/edit_course.html (đã chỉnh sửa, thêm section cho materials) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,6 +68,36 @@
                 <button type="button" class="btn btn-danger" id="delete-course-btn">Xóa Khóa học này</button>
                 <div id="message-container" style="margin-top: 15px; color: #7289da;"></div>
             </form>
+        </div>
+
+        <!-- Section mới cho quản lý tài liệu học -->
+        <div class="card card-materials mt-4">
+            <h2>Quản lý Tài liệu học</h2>
+            <form id="create-material-form">
+                <div class="form-group">
+                    <label for="material-title">Tiêu đề tài liệu</label>
+                    <input type="text" id="material-title" placeholder="Tiêu đề tài liệu" required>
+                </div>
+                <div class="form-group">
+                    <label for="material-content">Nội dung/Link tài liệu</label>
+                    <textarea id="material-content" placeholder="Nội dung hoặc link tài liệu"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Thêm Tài liệu</button>
+            </form>
+            <table id="materials-table" class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Nội dung</th>
+                        <th>Ngày tạo</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu sẽ được load động bằng JS -->
+                </tbody>
+            </table>
         </div>
     </div>
     
