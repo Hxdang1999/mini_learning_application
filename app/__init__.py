@@ -39,11 +39,12 @@ def create_app():
         db.create_all()
     
     # Đăng ký blueprints
-    from .api import auth_controller, course_controller, frontend_controller, material_controller, assignment_controller
+    from .api import auth_controller, course_controller, frontend_controller, material_controller, assignment_controller, admin_controller  # Thêm admin_controller
     app.register_blueprint(auth_controller.auth_bp)
     app.register_blueprint(course_controller.course_bp)
     app.register_blueprint(frontend_controller.frontend_bp)
     app.register_blueprint(material_controller.material_bp)
     app.register_blueprint(assignment_controller.assignment_bp)
+    app.register_blueprint(admin_controller.admin_bp)  # Đăng ký blueprint mới
     
     return app

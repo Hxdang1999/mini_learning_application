@@ -1,8 +1,6 @@
-// app/static/js/teacher_dashboard.js
-
 const API_BASE_URL = '/api/courses';
 
-// Hàm chuyển hướng đến trang chỉnh sửa khóa học
+// Hàm chuyển hướng đến trang chỉnh sửa/chi tiết khóa học
 function editCourse(courseId) {
     window.location.href = `/teacher/courses/${courseId}`;
 }
@@ -26,6 +24,10 @@ function checkAuthAndLoad() {
         if (createForm) {
             createForm.addEventListener('submit', handleCreateCourse);
         }
+        const changePasswordForm = document.getElementById('change-password-form');
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', handleChangePassword);
+        }
     }
 }
 
@@ -41,6 +43,10 @@ function displayCourses(courses) {
 
     courses.forEach(c => {
         const row = tableBody.insertRow();
+        // Cột 1: ID
+        row.insertCell().textContent = c.id || 'N/A';
+        
+        // Cột 2: Tiêu đề
         const titleCell = row.insertCell();
         if (c.title) {
             const words = c.title.trim().split(/\s+/);
@@ -54,15 +60,14 @@ function displayCourses(courses) {
             titleCell.textContent = "N/A";
         }
 
+        // Cột 3: Ngày tạo
         row.insertCell().textContent = c.created_at || 'N/A';
+        
+        // Cột 4: Công khai
         row.insertCell().textContent = c.is_public ? 'Công khai' : 'Riêng tư';
         
+        // Cột 5: Thao tác
         const actionsCell = row.insertCell();
-        const editBtn = document.createElement('button');
-        editBtn.className = 'btn btn-sm btn-primary';
-        editBtn.textContent = 'Sửa';
-        editBtn.onclick = () => editCourse(c.id);
-
         const detailBtn = document.createElement('button');
         detailBtn.className = 'btn btn-sm btn-info';
         detailBtn.textContent = 'Xem chi tiết';
@@ -73,7 +78,6 @@ function displayCourses(courses) {
         deleteBtn.textContent = 'Xóa';
         deleteBtn.onclick = () => deleteCourse(c.id);
 
-        actionsCell.appendChild(editBtn);
         actionsCell.appendChild(detailBtn);
         actionsCell.appendChild(deleteBtn);
     });
@@ -165,6 +169,33 @@ async function deleteCourse(courseId) {
             console.error('Lỗi khi xóa khóa học:', error);
             alert('Có lỗi xảy ra khi xóa khóa học. Vui lòng thử lại.');
         }
+    }
+}
+
+// Hàm xử lý đổi mật khẩu
+async function handleChangePassword(event) {
+    event.preventDefault();
+    const token = localStorage.getItem('access_token');
+    const oldPassword = document.getElementById('old-password').value;
+    const newPassword = document.getElementById('new-password').value;
+
+    try {
+        const response = await fetch('/api/auth/change-password', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ old_password: oldPassword, new_password: newPassword })
+        });
+        const data = await response.json();
+        alert(data.message);
+        if (response.ok) {
+            document.getElementById('change-password-form').reset();
+        }
+    } catch (error) {
+        console.error('Lỗi khi thay đổi mật khẩu:', error);
+        alert('Có lỗi xảy ra khi thay đổi mật khẩu.');
     }
 }
 

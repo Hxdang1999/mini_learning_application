@@ -1,4 +1,3 @@
-// app/static/js/student_dashboard.js
 const API_BASE_URL = '/api/courses';
 
 function checkAuthAndLoad() {
@@ -19,6 +18,11 @@ function checkAuthAndLoad() {
     const searchBtn = document.querySelector('#search-course-id + button');
     if (searchBtn) {
         searchBtn.addEventListener('click', lookupCourse);
+    }
+    // Mới: Gắn sự kiện submit cho form đổi mật khẩu
+    const changePasswordForm = document.getElementById('change-password-form');
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', handleChangePassword);
     }
 }
 
@@ -229,6 +233,33 @@ async function lookupCourse() {
 
 function enterCourse(courseId) {
     window.location.href = `/student/courses/${courseId}`;
+}
+
+// Mới: Xử lý đổi mật khẩu
+async function handleChangePassword(event) {
+    event.preventDefault();
+    const token = localStorage.getItem('access_token');
+    const oldPassword = document.getElementById('old-password').value;
+    const newPassword = document.getElementById('new-password').value;
+
+    try {
+        const response = await fetch('/api/auth/change-password', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ old_password: oldPassword, new_password: newPassword })
+        });
+        const data = await response.json();
+        alert(data.message);
+        if (response.ok) {
+            document.getElementById('change-password-form').reset();
+        }
+    } catch (error) {
+        console.error('Lỗi khi thay đổi mật khẩu:', error);
+        alert('Có lỗi xảy ra khi thay đổi mật khẩu.');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', checkAuthAndLoad);
