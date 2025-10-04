@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Đăng nhập</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
     <div class="user-management-card">
         <h2>Đăng nhập</h2>
@@ -34,11 +36,13 @@
                     localStorage.setItem('access_token', data.access_token);
                     localStorage.setItem('user_role', data.role);
                     localStorage.setItem('username', data.username);
-                    
+
                     if (data.role === 'teacher') {
                         window.location.href = '/teacher/dashboard';
-                    } else {
+                    } else if (data.role === 'student') {
                         window.location.href = '/student/dashboard';
+                    } else if (data.role === 'admin') {  // Mới
+                        window.location.href = '/admin/dashboard';
                     }
                 } else {
                     alert('Đăng nhập thất bại: ' + data.message);
@@ -50,4 +54,5 @@
         });
     </script>
 </body>
+
 </html>

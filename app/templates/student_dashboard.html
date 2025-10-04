@@ -20,68 +20,63 @@
 
     <!-- Nội dung chính -->
     <div class="main-container">
-        <!-- Cột trái -->
-        <div class="left-column">
-            <!-- Tìm khóa học -->
-            <div class="card">
-                <h2>Tìm khóa học theo ID</h2>
-                <div class="form-group">
-                    <input type="number" id="search-course-id" placeholder="Nhập ID khóa học">
-                </div>
-                <button class="btn btn-primary" onclick="lookupCourse()">Tìm</button>
-                <div id="lookup-result" class="mt-3"></div>
+        <div class="card">
+            <h2>Tìm khóa học theo ID</h2>
+            <div class="input-group mb-3">
+                <input type="text" id="search-course-id" class="form-control" placeholder="Nhập ID khóa học">
+                <button class="btn btn-primary">Tìm</button>
             </div>
-
-            <!-- Khóa học có thể đăng ký -->
-            <div class="card">
-                <h2>Khóa học có thể đăng ký</h2>
-                <table id="available-courses-list" class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tiêu đề</th>
-                            <th>Mô tả</th>
-                            <th>Công khai</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="5">Đang tải...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+            <div id="lookup-result"></div>
         </div>
 
-        <!-- Cột phải -->
-        <div class="right-column">
-            <!-- Khóa học đã đăng ký -->
-            <div class="card">
-                <h2>Khóa học đã đăng ký</h2>
-                <table id="enrolled-courses-list" class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tiêu đề</th>
-                            <th>Giảng viên</th>
-                            <th>Công khai</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="5">Đang tải...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="card">
+            <h2>Khóa học có thể đăng ký</h2>
+            <table id="available-courses-list" class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Mô tả</th>
+                        <th>Công khai</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="5">Đang tải...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Khóa học đã đăng ký</h2>
+            <table id="enrolled-courses-list" class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Giảng viên</th>
+                        <th>Công khai</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="5">Đang tải...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Form đổi mật khẩu -->
+        <div class="card">
+            <h2>Thay đổi Mật khẩu</h2>
+            <form id="change-password-form">
+                <input type="password" id="old-password" placeholder="Mật khẩu cũ" required>
+                <input type="password" id="new-password" placeholder="Mật khẩu mới" required>
+                <button type="submit">Thay đổi</button>
+            </form>
         </div>
     </div>
 
-    <!-- JS -->
+    <script src="/static/js/logout.js"></script>
     <script src="/static/js/student_dashboard.js"></script>
-    <script>
-        function logout() {
-            localStorage.clear();
-            window.location.href = "/login";
-        }
-    </script>
 </body>
 </html>

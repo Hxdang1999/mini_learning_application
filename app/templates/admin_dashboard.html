@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bảng điều khiển - Admin</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar-top">
+        <div class="navbar-container">
+            <div class="user-greeting">
+                Xin chào, <span id="username-display"></span>
+            </div>
+            <div class="user-controls">
+                <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nội dung chính -->
+    <div class="main-container">
+        <!-- Phần cho root admin -->
+        <div id="root-admin-section" style="display: none;">
+            <div class="card">
+                <h2>Quản lý Admin phụ</h2>
+                <form id="create-sub-admin-form">
+                    <input type="text" id="sub-username" placeholder="Tên đăng nhập admin phụ" required>
+                    <input type="password" id="sub-password" placeholder="Mật khẩu" required>
+                    <input type="number" id="max-users" placeholder="Số user tối đa" required>
+                    <button type="submit">Tạo Admin phụ</button>
+                </form>
+                <table id="sub-admins-table" class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên</th>
+                            <th>Mã code</th>
+                            <th>Max users</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Phần chung cho admin -->
+        <div class="card">
+            <h2>Quản lý User</h2>
+            <p>Số slot còn lại: <span id="remaining-slots">0</span></p>
+            <table id="users-table" class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Admin phụ (nếu có)</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Mới: Danh sách user pending -->
+        <div class="card">
+            <h2>Danh sách User Chờ Duyệt</h2>
+            <table id="pending-users-table" class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên</th>
+                        <th>Role</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Mới: Thay đổi mật khẩu -->
+        <div class="card">
+            <h2>Thay đổi Mật khẩu</h2>
+            <form id="change-password-form">
+                <input type="password" id="old-password" placeholder="Mật khẩu cũ" required>
+                <input type="password" id="new-password" placeholder="Mật khẩu mới" required>
+                <button type="submit">Thay đổi</button>
+            </form>
+        </div>
+
+        <!-- Cập nhật mã đăng ký -->
+        <div class="card">
+            <h2>Cập nhật Mã Đăng ký</h2>
+            <p>Mã hiện tại: <span id="current-code">Đang tải...</span></p>
+            <form id="update-code-form">
+                <input type="text" id="new-code" placeholder="Mã mới (6 ký tự)" required>
+                <button type="submit">Cập nhật</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/logout.js"></script>
+    <script src="/static/js/admin_dashboard.js"></script>
+</body>
+</html>

@@ -15,6 +15,7 @@
                 <option value="student">Sinh viên</option>
                 <option value="teacher">Giảng viên</option>
             </select>
+            <input type="text" id="code" placeholder="Mã đăng ký (6 ký tự)" required>  <!-- Mới -->
             <button type="submit">Đăng ký</button>
         </form>
         <p>Đã có tài khoản? <a href="{{ url_for('frontend.login') }}">Đăng nhập</a></p>
@@ -25,12 +26,13 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const role = document.getElementById('role').value;
+            const code = document.getElementById('code').value;  // Mới
 
             try {
                 const response = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, role })
+                    body: JSON.stringify({ username, password, role, code })  // Thêm code
                 });
 
                 const data = await response.json();
