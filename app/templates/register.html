@@ -3,10 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Đăng ký</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+    <button id="dark-mode-toggle" class="btn-icon">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <button id="bg-toggle" class="btn-icon">
+        <i class="fas fa-image"></i> 
+    </button>
+
+    <div class="video-background hidden"> 
+        <video autoplay muted loop playsinline>
+            <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
+            Trình duyệt của bạn không hỗ trợ thẻ video.
+        </video>
+    </div>
+
     <div class="user-management-card">
+        <div class="app-header">Mini Learning Application</div>
         <h2>Đăng ký tài khoản mới</h2>
         <form id="register-form">
             <input type="text" id="username" placeholder="Tên đăng nhập" required>
@@ -15,24 +32,89 @@
                 <option value="student">Sinh viên</option>
                 <option value="teacher">Giảng viên</option>
             </select>
-            <input type="text" id="code" placeholder="Mã đăng ký (6 ký tự)" required>  <!-- Mới -->
+            <input type="text" id="code" placeholder="Mã đăng ký (6 ký tự)" required>
             <button type="submit">Đăng ký</button>
         </form>
         <p>Đã có tài khoản? <a href="{{ url_for('frontend.login') }}">Đăng nhập</a></p>
     </div>
     <script>
+        // --- Dark Mode Logic ---
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+        const darkModeIcon = darkModeToggle.querySelector('i');
+        
+        // --- Background Toggle Logic ---
+        const bgToggle = document.getElementById('bg-toggle');
+        const videoBackground = document.querySelector('.video-background');
+        const bgIcon = bgToggle.querySelector('i');
+
+        // 1. Khởi tạo trạng thái Dark Mode
+        if (localStorage.getItem('dark-mode') === 'enabled') {
+            body.classList.add('dark-mode');
+            darkModeIcon.classList.remove('fa-moon');
+            darkModeIcon.classList.add('fa-sun');
+        }
+
+        // 2. Khởi tạo trạng thái Video/Static cho trang REGISTER
+        // Mặc định cho trang này là 'video'.
+        let currentBackgroundMode = localStorage.getItem('background-mode-register') || 'video';
+        
+        if (currentBackgroundMode === 'video') {
+            // Mặc định là video: đảm bảo video hiển thị
+            videoBackground.classList.remove('hidden');
+            bgIcon.classList.remove('fa-video');
+            bgIcon.classList.add('fa-image');
+        } else {
+            // Nếu người dùng chọn static: đảm bảo video bị ẩn
+            videoBackground.classList.add('hidden');
+            bgIcon.classList.remove('fa-image');
+            bgIcon.classList.add('fa-video');
+        }
+
+        // Event Listener cho Dark Mode
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('dark-mode', 'enabled');
+                darkModeIcon.classList.remove('fa-moon');
+                darkModeIcon.classList.add('fa-sun');
+            } else {
+                localStorage.setItem('dark-mode', 'disabled');
+                darkModeIcon.classList.remove('fa-sun');
+                darkModeIcon.classList.add('fa-moon');
+            }
+        });
+
+        // Event Listener cho Background Toggle
+        bgToggle.addEventListener('click', () => {
+            if (videoBackground.classList.contains('hidden')) {
+                // Chuyển sang Video Mode
+                videoBackground.classList.remove('hidden');
+                bgIcon.classList.remove('fa-video');
+                bgIcon.classList.add('fa-image');
+                localStorage.setItem('background-mode-register', 'video');
+            } else {
+                // Chuyển sang Static Mode
+                videoBackground.classList.add('hidden');
+                bgIcon.classList.remove('fa-image');
+                bgIcon.classList.add('fa-video');
+                localStorage.setItem('background-mode-register', 'static');
+            }
+        });
+        
+        // --- Logic Đăng Ký ---
         document.getElementById('register-form').addEventListener('submit', async (event) => {
             event.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const role = document.getElementById('role').value;
-            const code = document.getElementById('code').value;  // Mới
+            const code = document.getElementById('code').value;
 
             try {
                 const response = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, role, code })  // Thêm code
+                    body: JSON.stringify({ username, password, role, code })
                 });
 
                 const data = await response.json();

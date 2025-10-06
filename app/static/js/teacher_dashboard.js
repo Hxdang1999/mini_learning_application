@@ -5,6 +5,16 @@ function editCourse(courseId) {
     window.location.href = `/teacher/courses/${courseId}`;
 }
 
+// Hàm hiển thị section tương ứng với menu
+function showSection(sectionId) {
+    document.querySelectorAll('.card').forEach(section => {
+        section.style.display = section.id === sectionId ? 'block' : 'none';
+    });
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.classList.toggle('active', link.dataset.section === sectionId);
+    });
+}
+
 // Hàm kiểm tra xác thực và tải dữ liệu
 function checkAuthAndLoad() {
     const token = localStorage.getItem('access_token');
@@ -17,18 +27,79 @@ function checkAuthAndLoad() {
         } else {
             window.location.href = '/login';
         }
-    } else {
-        document.getElementById('username-display').textContent = username;
-        fetchTeacherCourses();
-        const createForm = document.getElementById('create-course-form');
-        if (createForm) {
-            createForm.addEventListener('submit', handleCreateCourse);
-        }
-        const changePasswordForm = document.getElementById('change-password-form');
-        if (changePasswordForm) {
-            changePasswordForm.addEventListener('submit', handleChangePassword);
-        }
+        return;
     }
+
+    document.getElementById('username-display').textContent = username;
+    
+    // Gắn sự kiện cho menu sidebar
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection(link.dataset.section + '-section');
+        });
+    });
+
+    // Gắn sự kiện submit cho form tạo khóa học
+    const createForm = document.getElementById('create-course-form');
+    if (createForm) {
+        createForm.addEventListener('submit', handleCreateCourse);
+    }
+
+    // Gắn sự kiện submit cho form đổi mật khẩu
+    const changePasswordForm = document.getElementById('change-password-form');
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', handleChangePassword);
+    }
+
+    // Gắn sự kiện toggle sidebar
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    sidebarToggle.addEventListener('click', () => {
+        const sidebar = document.getElementById('sidebar');
+        const mainContainer = document.getElementById('main-container');
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        mainContainer.classList.toggle('full-width');
+        sidebarToggle.setAttribute('title', isCollapsed ? 'Mở rộng' : 'Thu gọn');
+    });
+
+    // Gắn sự kiện toggle sáng/tối
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.addEventListener('click', () => {
+        const isDark = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        themeToggle.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        themeToggle.setAttribute('title', isDark ? 'Chế độ sáng' : 'Chế độ tối');
+    });
+
+    // Gắn sự kiện đăng xuất
+    const logoutButton = document.getElementById('logout-button');
+    logoutButton.addEventListener('click', () => {
+        logout();
+    });
+
+    // Áp dụng theme từ localStorage
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeToggle.querySelector('i').className = 'fas fa-sun';
+        themeToggle.setAttribute('title', 'Chế độ sáng');
+    } else {
+        themeToggle.setAttribute('title', 'Chế độ tối');
+    }
+
+    // Áp dụng trạng thái sidebar từ localStorage (nếu có)
+    if (localStorage.getItem('sidebar') === 'collapsed') {
+        document.getElementById('sidebar').classList.add('collapsed');
+        document.getElementById('main-container').classList.add('full-width');
+        sidebarToggle.setAttribute('title', 'Mở rộng');
+    } else {
+        sidebarToggle.setAttribute('title', 'Thu gọn');
+    }
+
+    // Tải danh sách khóa học
+    fetchTeacherCourses();
+
+    // Hiển thị section mặc định
+    showSection('create-course-section');
 }
 
 // Hàm hiển thị danh sách khóa học
@@ -43,10 +114,7 @@ function displayCourses(courses) {
 
     courses.forEach(c => {
         const row = tableBody.insertRow();
-        // Cột 1: ID
         row.insertCell().textContent = c.id || 'N/A';
-        
-        // Cột 2: Tiêu đề
         const titleCell = row.insertCell();
         if (c.title) {
             const words = c.title.trim().split(/\s+/);
@@ -59,25 +127,17 @@ function displayCourses(courses) {
         } else {
             titleCell.textContent = "N/A";
         }
-
-        // Cột 3: Ngày tạo
         row.insertCell().textContent = c.created_at || 'N/A';
-        
-        // Cột 4: Công khai
         row.insertCell().textContent = c.is_public ? 'Công khai' : 'Riêng tư';
-        
-        // Cột 5: Thao tác
         const actionsCell = row.insertCell();
         const detailBtn = document.createElement('button');
         detailBtn.className = 'btn btn-sm btn-info';
         detailBtn.textContent = 'Xem chi tiết';
-        detailBtn.onclick = () => editCourse(c.id);  // Chuyển đến trang chi tiết (edit_course.html)
-
+        detailBtn.onclick = () => editCourse(c.id);
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn btn-sm btn-danger';
         deleteBtn.textContent = 'Xóa';
         deleteBtn.onclick = () => deleteCourse(c.id);
-
         actionsCell.appendChild(detailBtn);
         actionsCell.appendChild(deleteBtn);
     });

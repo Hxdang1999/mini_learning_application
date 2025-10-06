@@ -11,27 +11,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('username-display').textContent = username;
 
+    // Sidebar & Theme setup
+    setupSidebar();
+
     try {
         const profileResponse = await fetch('/api/auth/profile', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!profileResponse.ok) {
-            throw new Error('Failed to fetch profile');
-        }
+        if (!profileResponse.ok) throw new Error('Failed to fetch profile');
         const profile = await profileResponse.json();
-        const isRoot = profile.is_root;
 
+        const isRoot = profile.is_root;
         if (isRoot) {
+            document.getElementById('menu-root-admin').style.display = 'block';
             document.getElementById('root-admin-section').style.display = 'block';
-            loadSubAdmins();
             document.getElementById('create-sub-admin-form').addEventListener('submit', handleCreateSubAdmin);
+            loadSubAdmins();
         }
 
         loadUsers();
-        loadCurrentCode(); // Mới: Load mã đăng ký hiện tại
-        loadPendingUsers(); // Mới: Load danh sách user pending
+        loadCurrentCode();
+        loadPendingUsers();
+
         document.getElementById('update-code-form').addEventListener('submit', handleUpdateCode);
-        document.getElementById('change-password-form').addEventListener('submit', handleChangePassword); // Mới: Change password
+        document.getElementById('change-password-form').addEventListener('submit', handleChangePassword);
     } catch (error) {
         console.error('Error loading profile:', error);
         alert('Lỗi tải thông tin admin. Vui lòng đăng nhập lại.');
@@ -39,15 +42,73 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+function setupSidebar() {
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const mainContainer = document.getElementById('main-container');
+    const themeToggle = document.getElementById('theme-toggle');
+    const logoutButton = document.getElementById('logout-button');
+
+    // Toggle sidebar
+    sidebarToggle.addEventListener('click', () => {
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        mainContainer.classList.toggle('full-width');
+        localStorage.setItem('sidebar', isCollapsed ? 'collapsed' : 'expanded');
+        sidebarToggle.setAttribute('title', isCollapsed ? 'Mở rộng' : 'Thu gọn');
+    });
+
+    // Toggle dark mode
+    themeToggle.addEventListener('click', () => {
+        const isDark = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        themeToggle.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        themeToggle.setAttribute('title', isDark ? 'Chế độ sáng' : 'Chế độ tối');
+    });
+
+    // Apply theme
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeToggle.querySelector('i').className = 'fas fa-sun';
+    }
+
+    // Sidebar state
+    if (localStorage.getItem('sidebar') === 'collapsed') {
+        sidebar.classList.add('collapsed');
+        mainContainer.classList.add('full-width');
+    }
+
+    // Logout
+    logoutButton.addEventListener('click', logout);
+
+    // Menu click
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const sectionId = link.dataset.section;
+            showSection(sectionId);
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+        });
+    });
+
+    showSection('manage-users-section'); // Default view
+}
+
+function showSection(sectionId) {
+    document.querySelectorAll('.card').forEach(sec => {
+        sec.style.display = sec.id === sectionId ? 'block' : 'none';
+    });
+}
+
+/* ================== CÁC HÀM GỐC GIỮ NGUYÊN ================== */
+
 async function loadSubAdmins() {
     const token = localStorage.getItem('access_token');
     try {
         const response = await fetch(`${API_BASE_URL}/sub-admins`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!response.ok) {
-            throw new Error('Failed to fetch sub-admins');
-        }
+        if (!response.ok) throw new Error('Failed to fetch sub-admins');
         const data = await response.json();
         const tableBody = document.getElementById('sub-admins-table').querySelector('tbody');
         tableBody.innerHTML = '';
@@ -60,7 +121,7 @@ async function loadSubAdmins() {
                 <td>${admin.max_users}</td>
                 <td>
                     <button onclick="updateMaxUsers(${admin.id})">Cập nhật Max</button>
-                    <button onclick="resetSubAdminPassword(${admin.id})">Reset PW</button> <!-- Mới: Reset password -->
+                    <button onclick="resetSubAdminPassword(${admin.id})">Reset PW</button>
                     <button onclick="deleteSubAdmin(${admin.id})">Xóa</button>
                 </td>
             `;
@@ -107,9 +168,7 @@ async function deleteSubAdmin(subAdminId) {
         });
         const data = await response.json();
         alert(data.message);
-        if (response.ok) {
-            loadSubAdmins();
-        }
+        if (response.ok) loadSubAdmins();
     } catch (error) {
         console.error('Lỗi khi xóa admin phụ:', error);
         alert('Có lỗi xảy ra khi xóa admin phụ.');
@@ -131,16 +190,13 @@ async function updateMaxUsers(subAdminId) {
         });
         const data = await response.json();
         alert(data.message);
-        if (response.ok) {
-            loadSubAdmins();
-        }
+        if (response.ok) loadSubAdmins();
     } catch (error) {
         console.error('Lỗi khi cập nhật max users:', error);
         alert('Có lỗi xảy ra khi cập nhật max users.');
     }
 }
 
-// Mới: Reset password cho admin phụ
 async function resetSubAdminPassword(subAdminId) {
     if (!confirm('Bạn có chắc muốn reset mật khẩu admin phụ này?')) return;
     const token = localStorage.getItem('access_token');
@@ -151,9 +207,7 @@ async function resetSubAdminPassword(subAdminId) {
         });
         const data = await response.json();
         alert(`${data.message}. Mật khẩu mới: ${data.new_password}`);
-        if (response.ok) {
-            loadSubAdmins();
-        }
+        if (response.ok) loadSubAdmins();
     } catch (error) {
         console.error('Lỗi khi reset mật khẩu admin phụ:', error);
         alert('Có lỗi xảy ra khi reset mật khẩu admin phụ.');
@@ -166,22 +220,16 @@ async function loadUsers() {
         const response = await fetch(`${API_BASE_URL}/users`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!response.ok) {
-            throw new Error('Failed to fetch users');
-        }
+        if (!response.ok) throw new Error('Failed to fetch users');
         const data = await response.json();
         const tableBody = document.getElementById('users-table').querySelector('tbody');
         tableBody.innerHTML = '';
         if (data.remaining_slots !== undefined) {
             document.getElementById('remaining-slots').textContent = data.remaining_slots;
-            data.users.forEach(user => {
-                addUserRow(tableBody, user, '');
-            });
+            data.users.forEach(user => addUserRow(tableBody, user, ''));
         } else {
             for (const [manager, users] of Object.entries(data)) {
-                users.forEach(user => {
-                    addUserRow(tableBody, user, manager);
-                });
+                users.forEach(user => addUserRow(tableBody, user, manager));
             }
         }
     } catch (error) {
@@ -251,25 +299,20 @@ async function handleUpdateCode(event) {
         });
         const data = await response.json();
         alert(data.message);
-        if (response.ok) {
-            loadCurrentCode(); // Cập nhật lại mã hiện tại
-        }
+        if (response.ok) loadCurrentCode();
     } catch (error) {
         console.error('Lỗi khi cập nhật mã đăng ký:', error);
         alert('Có lỗi xảy ra khi cập nhật mã đăng ký.');
     }
 }
 
-// Mới: Load mã đăng ký hiện tại
 async function loadCurrentCode() {
     const token = localStorage.getItem('access_token');
     try {
         const response = await fetch('/api/auth/profile', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!response.ok) {
-            throw new Error('Failed to fetch profile');
-        }
+        if (!response.ok) throw new Error('Failed to fetch profile');
         const data = await response.json();
         document.getElementById('current-code').textContent = data.registration_code || 'Không có';
     } catch (error) {
@@ -278,7 +321,6 @@ async function loadCurrentCode() {
     }
 }
 
-// Mới: Thay đổi mật khẩu
 async function handleChangePassword(event) {
     event.preventDefault();
     const token = localStorage.getItem('access_token');
@@ -292,25 +334,20 @@ async function handleChangePassword(event) {
         });
         const data = await response.json();
         alert(data.message);
-        if (response.ok) {
-            document.getElementById('change-password-form').reset();
-        }
+        if (response.ok) document.getElementById('change-password-form').reset();
     } catch (error) {
         console.error('Lỗi khi thay đổi mật khẩu:', error);
         alert('Có lỗi xảy ra khi thay đổi mật khẩu.');
     }
 }
 
-// Mới: Load danh sách user pending
 async function loadPendingUsers() {
     const token = localStorage.getItem('access_token');
     try {
         const response = await fetch(`${API_BASE_URL}/pending-users`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!response.ok) {
-            throw new Error('Failed to fetch pending users');
-        }
+        if (!response.ok) throw new Error('Failed to fetch pending users');
         const data = await response.json();
         const tableBody = document.getElementById('pending-users-table').querySelector('tbody');
         tableBody.innerHTML = '';
@@ -333,7 +370,6 @@ async function loadPendingUsers() {
     }
 }
 
-// Mới: Duyệt hoặc từ chối user
 async function approveUser(userId, approve) {
     const token = localStorage.getItem('access_token');
     try {

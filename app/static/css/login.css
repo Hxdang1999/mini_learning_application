@@ -1,0 +1,204 @@
+/* CSS Variables cho Light và Dark Mode */
+:root {
+    --bg-color: #f4f4f4;
+    --text-color: #333;
+    --card-bg: #fff;
+    --card-bg-rgb: 255, 255, 255; /* Biến RGB cho độ trong suốt */
+    --primary-color: #007bff;
+    --border-color: #ddd;
+    --toggle-color: #333; /* Màu icon chuyển đổi */
+}
+
+body.dark-mode {
+    --bg-color: #222;
+    --text-color: #f4f4f4;
+    --card-bg: #333;
+    --card-bg-rgb: 51, 51, 51; /* Biến RGB cho dark mode */
+    --primary-color: #66b0ff;
+    --border-color: #444;
+    --toggle-color: #f4f4f4;
+}
+
+/* --- Căn giữa màn hình cho body và Nền Ảnh tĩnh --- */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
+    margin: 0;
+    transition: background-color 0.3s;
+    
+    /* ĐƯỜNG DẪN ĐÃ SỬA: Dùng đường dẫn tương đối từ file CSS */
+    /* File login.css nằm trong static/css/, nên cần lùi 1 cấp (../) để vào static/, rồi vào images/ */
+    background-image: url('../images/background_static.jpg');
+    background-size: cover; 
+    background-position: center; 
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+
+    /* Căn giữa tuyệt đối */
+    display: flex;
+    justify-content: center; /* Căn giữa ngang */
+    align-items: center;    /* Căn giữa dọc */
+    min-height: 100vh;
+}
+
+/* --- Video Background --- */
+.video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1; 
+}
+
+.video-background video {
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+}
+
+/* Class để ẩn video, dùng khi chuyển sang chế độ nền tĩnh */
+.video-background.hidden {
+    display: none;
+}
+
+/* --- Nút chuyển đổi Dark Mode và Background --- */
+#dark-mode-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100; 
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: var(--toggle-color);
+    transition: color 0.3s;
+    padding: 10px;
+    border-radius: 50%;
+}
+
+#bg-toggle {
+    position: fixed;
+    top: 20px;
+    right: 70px; 
+    z-index: 100;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: var(--toggle-color);
+    transition: color 0.3s;
+    padding: 10px;
+    border-radius: 50%;
+}
+
+#dark-mode-toggle:hover,
+#bg-toggle:hover {
+    color: var(--primary-color);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* --- Thiết kế Form Đăng nhập/Đăng ký (Card Quản lý Người dùng) --- */
+
+.app-header {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.user-management-card {
+    z-index: 10;
+    position: relative; 
+    
+    background-color: var(--card-bg);
+    padding: 40px; 
+    border-radius: 12px; 
+    max-width: 400px; 
+    width: 90%; 
+    text-align: center; 
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); 
+    
+    /* Độ trong suốt nhẹ và hiệu ứng làm mờ */
+    background-color: rgba(var(--card-bg-rgb), 0.95);
+    backdrop-filter: blur(5px); 
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.user-management-card h2 {
+    color: var(--primary-color);
+    margin-bottom: 25px;
+    font-size: 1.8rem;
+}
+
+/* Căn chỉnh Input và Select */
+.user-management-card input[type="text"],
+.user-management-card input[type="password"],
+.user-management-card select {
+    width: 100%;
+    padding: 15px; 
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px; 
+    box-sizing: border-box;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.user-management-card input:focus,
+.user-management-card select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+/* Căn chỉnh Button Đăng nhập/Đăng ký */
+.user-management-card button[type="submit"] {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.user-management-card button[type="submit"]:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+/* Link Đăng ký/Đăng nhập */
+.user-management-card p {
+    margin-top: 20px;
+    font-size: 0.95rem;
+}
+
+.user-management-card a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.user-management-card a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}

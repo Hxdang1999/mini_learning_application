@@ -2,51 +2,79 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng điều khiển - Admin</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
-    <!-- Navbar -->
-    <div class="navbar-top">
-        <div class="navbar-container">
-            <div class="user-greeting">
-                Xin chào, <span id="username-display"></span>
-            </div>
-            <div class="user-controls">
-                <button class="btn-logout" onclick="logout()">Đăng xuất</button>
-            </div>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-shield-alt"></i> Admin Panel</h3>
+        </div>
+        <div class="sidebar-user">
+            <i class="fas fa-user-shield"></i> <span id="username-display"></span>
+        </div>
+        <ul class="sidebar-menu">
+            <li id="menu-root-admin" style="display:none;">
+                <a href="#" class="sidebar-link" data-section="root-admin-section">
+                    <i class="fas fa-users-gear"></i> <span>Quản lý Admin phụ</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link active" data-section="manage-users-section">
+                    <i class="fas fa-user"></i> <span>Quản lý User</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-section="pending-users-section">
+                    <i class="fas fa-user-clock"></i> <span>User Chờ Duyệt</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-section="update-code-section">
+                    <i class="fas fa-key"></i> <span>Cập nhật Mã Đăng ký</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-section="change-password-section">
+                    <i class="fas fa-lock"></i> <span>Thay đổi Mật khẩu</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <button id="theme-toggle" class="btn btn-icon" title="Chế độ tối"><i class="fas fa-moon"></i></button>
+            <button id="sidebar-toggle" class="btn btn-icon" title="Thu gọn"><i class="fas fa-bars"></i></button>
+            <button id="logout-button" class="btn btn-icon" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </div>
 
     <!-- Nội dung chính -->
-    <div class="main-container">
-        <!-- Phần cho root admin -->
-        <div id="root-admin-section" style="display: none;">
-            <div class="card">
-                <h2>Quản lý Admin phụ</h2>
-                <form id="create-sub-admin-form">
-                    <input type="text" id="sub-username" placeholder="Tên đăng nhập admin phụ" required>
-                    <input type="password" id="sub-password" placeholder="Mật khẩu" required>
-                    <input type="number" id="max-users" placeholder="Số user tối đa" required>
-                    <button type="submit">Tạo Admin phụ</button>
-                </form>
-                <table id="sub-admins-table" class="table mt-3">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên</th>
-                            <th>Mã code</th>
-                            <th>Max users</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+    <div class="main-container" id="main-container">
+        <div class="card" id="root-admin-section" style="display:none;">
+            <h2>Quản lý Admin phụ</h2>
+            <form id="create-sub-admin-form">
+                <input type="text" id="sub-username" class="form-control" placeholder="Tên đăng nhập admin phụ" required>
+                <input type="password" id="sub-password" class="form-control" placeholder="Mật khẩu" required>
+                <input type="number" id="max-users" class="form-control" placeholder="Số user tối đa" required>
+                <button type="submit" class="btn btn-primary">Tạo Admin phụ</button>
+            </form>
+            <table id="sub-admins-table" class="table mt-3">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên</th>
+                        <th>Mã code</th>
+                        <th>Max users</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
 
-        <!-- Phần chung cho admin -->
-        <div class="card">
+        <div class="card" id="manage-users-section">
             <h2>Quản lý User</h2>
             <p>Số slot còn lại: <span id="remaining-slots">0</span></p>
             <table id="users-table" class="table">
@@ -64,8 +92,7 @@
             </table>
         </div>
 
-        <!-- Mới: Danh sách user pending -->
-        <div class="card">
+        <div class="card" id="pending-users-section" style="display:none;">
             <h2>Danh sách User Chờ Duyệt</h2>
             <table id="pending-users-table" class="table mt-3">
                 <thead>
@@ -80,23 +107,21 @@
             </table>
         </div>
 
-        <!-- Mới: Thay đổi mật khẩu -->
-        <div class="card">
-            <h2>Thay đổi Mật khẩu</h2>
-            <form id="change-password-form">
-                <input type="password" id="old-password" placeholder="Mật khẩu cũ" required>
-                <input type="password" id="new-password" placeholder="Mật khẩu mới" required>
-                <button type="submit">Thay đổi</button>
-            </form>
-        </div>
-
-        <!-- Cập nhật mã đăng ký -->
-        <div class="card">
+        <div class="card" id="update-code-section" style="display:none;">
             <h2>Cập nhật Mã Đăng ký</h2>
             <p>Mã hiện tại: <span id="current-code">Đang tải...</span></p>
             <form id="update-code-form">
-                <input type="text" id="new-code" placeholder="Mã mới (6 ký tự)" required>
-                <button type="submit">Cập nhật</button>
+                <input type="text" id="new-code" class="form-control" placeholder="Mã mới (6 ký tự)" required>
+                <button type="submit" class="btn btn-primary">Cập nhật</button>
+            </form>
+        </div>
+
+        <div class="card" id="change-password-section" style="display:none;">
+            <h2>Thay đổi Mật khẩu</h2>
+            <form id="change-password-form">
+                <input type="password" id="old-password" class="form-control" placeholder="Mật khẩu cũ" required>
+                <input type="password" id="new-password" class="form-control" placeholder="Mật khẩu mới" required>
+                <button type="submit" class="btn btn-primary">Thay đổi</button>
             </form>
         </div>
     </div>

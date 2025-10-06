@@ -2,34 +2,48 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng điều khiển - Sinh viên</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
-    <!-- Navbar -->
-    <div class="navbar-top">
-        <div class="navbar-container">
-            <div class="user-greeting">
-                Xin chào, <span id="username-display"></span>
-            </div>
-            <div class="user-controls">
-                <button class="btn-logout" onclick="logout()">Đăng xuất</button>
-            </div>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-graduation-cap"></i> Learning Platform</h3>
+        </div>
+        <div class="sidebar-user">
+            <i class="fas fa-user"></i> <span id="username-display"></span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="sidebar-link active" data-section="search-course"><i class="fas fa-search"></i> <span>Tìm Khóa học</span></a></li>
+            <li><a href="#" class="sidebar-link" data-section="available-courses"><i class="fas fa-book-open"></i> <span>Khóa học có thể đăng ký</span></a></li>
+            <li><a href="#" class="sidebar-link" data-section="enrolled-courses"><i class="fas fa-bookmark"></i> <span>Khóa học đã đăng ký</span></a></li>
+            <li><a href="#" class="sidebar-link" data-section="change-password"><i class="fas fa-lock"></i> <span>Thay đổi Mật khẩu</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <button id="theme-toggle" class="btn btn-icon" title="Chế độ tối"><i class="fas fa-moon"></i></button>
+            <button id="sidebar-toggle" class="btn btn-icon" title="Thu gọn"><i class="fas fa-bars"></i></button>
+            <button id="logout-button" class="btn btn-icon" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </div>
 
     <!-- Nội dung chính -->
-    <div class="main-container">
-        <div class="card">
-            <h2>Tìm khóa học theo ID</h2>
+    <div class="main-container" id="main-container">
+        <div class="card" id="search-course-section">
+            <h2>Tìm Khóa học theo ID</h2>
             <div class="input-group mb-3">
-                <input type="text" id="search-course-id" class="form-control" placeholder="Nhập ID khóa học">
-                <button class="btn btn-primary">Tìm</button>
+                <label for="search-course-id" class="form-label">ID khóa học</label>
+                <div class="input-group-inner">
+                    <input type="text" id="search-course-id" class="form-control" placeholder="Nhập ID khóa học">
+                    <button class="btn btn-primary">Tìm</button>
+                </div>
             </div>
             <div id="lookup-result"></div>
         </div>
 
-        <div class="card">
+        <div class="card" id="available-courses-section" style="display: none;">
             <h2>Khóa học có thể đăng ký</h2>
             <table id="available-courses-list" class="table">
                 <thead>
@@ -47,7 +61,7 @@
             </table>
         </div>
 
-        <div class="card">
+        <div class="card" id="enrolled-courses-section" style="display: none;">
             <h2>Khóa học đã đăng ký</h2>
             <table id="enrolled-courses-list" class="table">
                 <thead>
@@ -65,13 +79,18 @@
             </table>
         </div>
 
-        <!-- Form đổi mật khẩu -->
-        <div class="card">
+        <div class="card" id="change-password-section" style="display: none;">
             <h2>Thay đổi Mật khẩu</h2>
             <form id="change-password-form">
-                <input type="password" id="old-password" placeholder="Mật khẩu cũ" required>
-                <input type="password" id="new-password" placeholder="Mật khẩu mới" required>
-                <button type="submit">Thay đổi</button>
+                <div class="mb-3">
+                    <label for="old-password" class="form-label">Mật khẩu cũ</label>
+                    <input type="password" id="old-password" class="form-control" placeholder="Nhập mật khẩu cũ" required>
+                </div>
+                <div class="mb-3">
+                    <label for="new-password" class="form-label">Mật khẩu mới</label>
+                    <input type="password" id="new-password" class="form-control" placeholder="Nhập mật khẩu mới" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Thay đổi</button>
             </form>
         </div>
     </div>

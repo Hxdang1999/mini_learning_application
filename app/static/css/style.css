@@ -1,307 +1,340 @@
-/* ==================================== */
-/* Quy tắc chung cho toàn bộ trang web */
-/* ==================================== */
+/* CSS Variables cho Light và Dark Mode */
+:root {
+    --bg-color: #f4f4f4;
+    --text-color: #333;
+    --card-bg: #fff;
+    --primary-color: #007bff;
+    --sidebar-bg: #f8f9fa;
+    --sidebar-text: #333;
+    --sidebar-active: #007bff;
+    --border-color: #ddd;
+}
+
+body.dark-mode {
+    --bg-color: #222;
+    --text-color: #f4f4f4;
+    --card-bg: #333;
+    --primary-color: #66b0ff;
+    --sidebar-bg: #2c2c2c;
+    --sidebar-text: #f4f4f4;
+    --sidebar-active: #66b0ff;
+    --border-color: #444;
+}
+
 body {
-    background-color: #2c2f33; /* Dark background */
-    color: #ffffff;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: Arial, sans-serif;
     margin: 0;
-    padding: 0;
+    display: flex;
+    min-height: 100vh;
 }
 
-/* ==================================== */
-/* Kiểu dáng cho trang login và register */
-/* ==================================== */
-.user-management-card {
-    background-color: #36393f;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    padding: 20px;
+    transition: width 0.3s;
+    position: fixed;
+    height: 100%;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.sidebar.collapsed {
+    width: 60px;
+}
+
+.sidebar.collapsed .sidebar-header h3,
+.sidebar.collapsed .sidebar-user span,
+.sidebar.collapsed .sidebar-menu a span {
+    display: none;
+}
+
+.sidebar-header {
     text-align: center;
-    max-width: 400px;
-    margin: 2rem auto;
+    margin-bottom: 20px;
 }
 
-h2 {
-    color: #7289da;
-}
-
-input[type="text"],
-input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #4f545c;
-    background-color: #40444b;
-    color: #ffffff;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-
-button {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    background-color: #7289da;
-    color: #ffffff;
-    font-weight: bold;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #677bc4;
-}
-
-p {
-    margin-top: 20px;
-}
-
-a {
-    color: #7289da;
-    text-decoration: none;
-}
-
-/* Định dạng cho thẻ select */
-select {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #4f545c;
-    background-color: #40444b;
-    color: #ffffff;
-    border-radius: 5px;
-    box-sizing: border-box;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
-
-/* ==================================== */
-/* Kiểu dáng cho Dashboard Giảng viên */
-/* ==================================== */
-.navbar-top {
-    background-color: #23272a;
-    padding: 1rem;
-    color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.navbar-container {
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
     display: flex;
-    justify-content: flex-end;
     align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    gap: 15px;
-}
-
-.user-info {
-    font-size: 1rem;
-    color: #b9bbbe;
-}
-
-.user-info span {
-    font-weight: bold;
-    color: #ffffff;
-}
-
-.btn-logout {
-    background-color: transparent;
-    color: #b9bbbe;
-    border: 1px solid #b9bbbe;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.btn-logout:hover {
-    background-color: #4f545c;
-    color: #ffffff;
-}
-
-.main-container {
-    display: flex;
     justify-content: center;
-    align-items: flex-start;
-    padding: 2rem;
-    gap: 2rem;
-    flex-wrap: wrap;
-    max-width: 1200px;
-    margin: 0 auto;
+    gap: 10px;
 }
 
-.card {
-    background-color: #23272a;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-    min-width: 400px;
-    flex: 1;
-}
-
-.card h2 {
-    color: #7289da;
-    border-bottom: 2px solid #4f545c;
-    padding-bottom: 1rem;
-    margin-top: 0;
-}
-
-.form-group {
-    margin-bottom: 1rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #b9bbbe;
-}
-
-.form-group input[type="text"],
-.form-group textarea {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: #40444b;
-    border: none;
-    border-radius: 4px;
-    color: #ffffff;
-    box-sizing: border-box;
-}
-
-.form-group textarea {
-    resize: vertical;
-    min-height: 100px;
-}
-
-.form-check {
+.sidebar-user {
+    margin-bottom: 20px;
+    font-weight: bold;
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 1rem;
 }
 
-.btn {
-    padding: 0.75rem 1.5rem;
+.sidebar-user i {
+    min-width: 20px;
+    text-align: center;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar-menu li {
+    margin-bottom: 10px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.sidebar-link i {
+    min-width: 20px;
+    text-align: center;
+}
+
+.sidebar-link span {
+    margin-left: 10px;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+    background-color: var(--sidebar-active);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 1cm; /* Cố định cách lề dưới 1cm */
+    width: calc(100% - 40px); /* Bù padding 20px của .sidebar */
+    padding-left: 0; /* Đảm bảo căn lề trái */
+}
+
+.sidebar-footer .btn-icon {
+    margin-bottom: 10px; /* Khoảng cách giữa các icon */
+}
+
+.btn-icon {
+    background: none;
     border: none;
-    border-radius: 4px;
-    font-size: 1rem;
+    color: var(--sidebar-text);
     cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.btn-primary {
-    background-color: #7289da;
-    color: #ffffff;
-}
-
-.btn-primary:hover {
-    background-color: #6177c2;
-}
-
-.btn-danger {
-    background-color: #f04747;
-    color: #ffffff;
-}
-
-.btn-danger:hover {
-    background-color: #d83d3d;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-}
-
-.table thead th {
-    background-color: #4f545c;
-    color: #ffffff;
-    padding: 0.75rem;
+    font-size: 1rem;
+    padding: 10px;
+    border-radius: 5px;
     text-align: left;
-}
-
-.table tbody td {
-    padding: 0.75rem;
-    border-bottom: 1px solid #4f545c;
-}
-
-.btn-sm {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.8rem;
-}
-/* ==================================== */
-/* Cập nhật giao diện Navbar */
-/* ==================================== */
-.navbar-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
-
-.user-controls {
     display: flex;
     align-items: center;
-    gap: 15px;
+    width: 100%;
 }
 
-.user-greeting {
-    font-size: 1rem;
-    color: #b9bbbe;
+.btn-icon i {
+    min-width: 20px;
+    text-align: center;
 }
 
-.user-greeting span {
-    font-weight: bold;
-    color: #ffffff;
+.btn-icon:hover {
+    color: var(--sidebar-active);
 }
 
-.btn-logout {
-    background-color: transparent;
-    color: #b9bbbe;
-    border: 1px solid #b9bbbe;
-    padding: 0.5rem 0.8rem; /* Giảm padding để nút nhỏ hơn */
-    border-radius: 4px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.btn-logout:hover {
-    background-color: #4f545c;
-    color: #ffffff;
-}
-/* Bố cục chia 2 cột cho student dashboard */
+/* Main Container */
 .main-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 2rem;
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
+    margin-left: calc(250px + 1cm); /* Khoảng cách 1cm */
+    padding: 20px;
+    flex-grow: 1;
+    transition: margin-left 0.3s;
 }
 
-.left-column, .right-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+.main-container.full-width {
+    margin-left: calc(60px + 1cm);
 }
 
-/* Responsive: khi màn nhỏ thì xếp dọc */
-@media (max-width: 992px) {
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+    .sidebar-header h3,
+    .sidebar-user span,
+    .sidebar-menu a span {
+        display: none;
+    }
     .main-container {
-        flex-direction: column;
+        margin-left: calc(60px + 1cm);
+    }
+    .sidebar.collapsed {
+        width: 60px;
+    }
+    .main-container.full-width {
+        margin-left: calc(60px + 1cm);
     }
 }
 
-/* Điều chỉnh cột Tiêu đề rộng hơn */
-.table td:nth-child(2),
-.table th:nth-child(2) {
-    min-width: 200px; /* tăng chiều rộng tối thiểu */
+/* Card */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+    min-height: 500px; /* Giữ chiều cao dọc */
+    width: 100%; /* Giữ chiều ngang */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Table */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--card-bg);
+}
+
+.table th,
+.table td {
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    text-align: left;
+}
+
+.table th {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 20px; /* Tăng kích thước nút */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Form */
+.form-control {
+    width: 100%;
+    padding: 12px; /* Tăng padding cho input */
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.form-label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-check-input {
+    margin-right: 10px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Căn lề trái */
+}
+
+.input-group-inner {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 500px; /* Giới hạn chiều rộng */
+}
+
+.input-group-inner .form-control {
+    flex-grow: 1;
+    margin-right: 15px;
+    margin-bottom: 0; /* Loại bỏ margin-bottom trong input-group */
+}
+
+.input-group-inner .btn {
+    padding: 12px 20px; /* Đồng bộ kích thước với input */
+}
+
+/* Tinh chỉnh card Thay đổi Mật khẩu */
+#change-password-section form {
+    max-width: 500px; /* Giới hạn chiều rộng form */
+    margin-left: 0; /* Căn lề trái */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Tinh chỉnh card Tìm Khóa học */
+#search-course-section .input-group {
+    max-width: 500px; /* Giới hạn chiều rộng */
+    margin-left: 0; /* Căn lề trái */
+}
+
+#lookup-result {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 700px; /* Giới hạn chiều rộng bảng kết quả */
+    margin-left: 0; /* Căn lề trái */
+}
+
+/* Căn giữa nội dung trong card có ít nội dung */
+.card form,
+.card .input-group,
+.card #lookup-result {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }

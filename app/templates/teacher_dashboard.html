@@ -2,25 +2,35 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng điều khiển - Giảng viên</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
-    <!-- Navbar -->
-    <div class="navbar-top">
-        <div class="navbar-container">
-            <div class="user-greeting">
-                Xin chào, <span id="username-display"></span>
-            </div>
-            <div class="user-controls">
-                <button class="btn-logout" onclick="logout()">Đăng xuất</button>
-            </div>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-graduation-cap"></i> Learning Platform</h3>
+        </div>
+        <div class="sidebar-user">
+            <i class="fas fa-user"></i> <span id="username-display"></span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="sidebar-link active" data-section="create-course"><i class="fas fa-plus-circle"></i> <span>Tạo Khóa học</span></a></li>
+            <li><a href="#" class="sidebar-link" data-section="my-courses"><i class="fas fa-book"></i> <span>Khóa học của tôi</span></a></li>
+            <li><a href="#" class="sidebar-link" data-section="change-password"><i class="fas fa-lock"></i> <span>Thay đổi Mật khẩu</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <button id="theme-toggle" class="btn btn-icon" title="Chế độ tối"><i class="fas fa-moon"></i></button>
+            <button id="sidebar-toggle" class="btn btn-icon" title="Thu gọn"><i class="fas fa-bars"></i></button>
+            <button id="logout-button" class="btn btn-icon" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </div>
 
     <!-- Nội dung chính -->
-    <div class="main-container">
-        <div class="card">
+    <div class="main-container" id="main-container">
+        <div class="card" id="create-course-section">
             <h2>Tạo Khóa học mới</h2>
             <form id="create-course-form">
                 <div class="mb-3">
@@ -39,7 +49,7 @@
             </form>
         </div>
 
-        <div class="card">
+        <div class="card" id="my-courses-section" style="display: none;">
             <h2>Khóa học của tôi</h2>
             <table id="courses-table" class="table">
                 <thead>
@@ -56,13 +66,18 @@
             </table>
         </div>
 
-        <!-- Form đổi mật khẩu -->
-        <div class="card">
+        <div class="card" id="change-password-section" style="display: none;">
             <h2>Thay đổi Mật khẩu</h2>
             <form id="change-password-form">
-                <input type="password" id="old-password" placeholder="Mật khẩu cũ" required>
-                <input type="password" id="new-password" placeholder="Mật khẩu mới" required>
-                <button type="submit">Thay đổi</button>
+                <div class="mb-3">
+                    <label for="old-password" class="form-label">Mật khẩu cũ</label>
+                    <input type="password" id="old-password" class="form-control" placeholder="Nhập mật khẩu cũ" required>
+                </div>
+                <div class="mb-3">
+                    <label for="new-password" class="form-label">Mật khẩu mới</label>
+                    <input type="password" id="new-password" class="form-control" placeholder="Nhập mật khẩu mới" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Thay đổi</button>
             </form>
         </div>
     </div>
