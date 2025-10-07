@@ -1,90 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Chi tiết Khóa học</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        .card-course-detail, .card-materials, .card-assignments {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-        }
-        .course-info p {
-            margin: 0.5rem 0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Chi tiết Khóa học</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body data-course-id="{{ course_id }}">
-    <div class="navbar-top">
-        <div class="navbar-container">
-            <h1 class="navbar-brand">Chi tiết Khóa học ID: <span id="course-id-display"></span></h1>
-            <div class="user-controls">
-                <button class="btn btn-primary" onclick="window.location.href='/student/dashboard'">Quay lại Dashboard</button>
-                <button class="btn btn-logout" onclick="logout()">Đăng xuất</button>
-            </div>
-        </div>
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3><i class="fas fa-graduation-cap"></i> ID: <span id="course-id-display">N/A</span></h3>
+    </div>
+    <div class="sidebar-user">
+      <i class="fas fa-book-open"></i> <span>Khóa học của tôi</span>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="#" class="sidebar-link active" data-section="course-info"><i class="fas fa-info-circle"></i> <span>Thông tin khóa học</span></a></li>
+      <li><a href="#" class="sidebar-link" data-section="materials"><i class="fas fa-file-alt"></i> <span>Tài liệu học</span></a></li>
+      <li><a href="#" class="sidebar-link" data-section="assignments"><i class="fas fa-tasks"></i> <span>Bài tập</span></a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button class="btn btn-icon" onclick="window.location.href='/student/dashboard'" title="Quay lại Dashboard"><i class="fas fa-arrow-left"></i></button>
+      <button id="theme-toggle" class="btn btn-icon" title="Chế độ tối"><i class="fas fa-moon"></i></button>
+      <button id="sidebar-toggle" class="btn btn-icon" title="Thu gọn"><i class="fas fa-bars"></i></button>
+      <button id="logout-button" class="btn btn-icon" onclick="logout()" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-container" id="main-container">
+    <!-- Thông tin khóa học -->
+    <div class="card" id="course-info-section">
+      <h2>Thông tin Khóa học</h2>
+      <p><strong>Tiêu đề:</strong> <span id="course-title">Đang tải...</span></p>
+      <p><strong>Mô tả:</strong> <span id="course-description">Đang tải...</span></p>
+      <p><strong>Công khai:</strong> <span id="is-public">Đang tải...</span></p>
+      <p><strong>Ngày tạo:</strong> <span id="created-at">Đang tải...</span></p>
     </div>
 
-    <div class="main-container">
-        <div class="card card-course-detail">
-            <h2>Thông tin Khóa học</h2>
-            <div class="course-info">
-                <p><strong>Tiêu đề:</strong> <span id="course-title">Đang tải...</span></p>
-                <p><strong>Mô tả:</strong> <span id="course-description">Đang tải...</span></p>
-                <p><strong>Công khai:</strong> <span id="is-public">Đang tải...</span></p>
-                <p><strong>Ngày tạo:</strong> <span id="created-at">Đang tải...</span></p>
-            </div>
-        </div>
-
-        <div class="card card-materials mt-4">
-            <h2>Tài liệu học</h2>
-            <table id="materials-table" class="table mt-3">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tiêu đề</th>
-                        <th>Nội dung/Link</th>
-                        <th>Ngày tạo</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="card card-assignments mt-4">
-            <h2>Bài tập</h2>
-            <table id="assignments-table" class="table mt-3">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tiêu đề</th>
-                        <th>Mô tả</th>
-                        <th>Hạn nộp</th>
-                        <th>Điểm tối đa</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+    <!-- Tài liệu -->
+    <div class="card" id="materials-section" style="display:none;">
+      <h2>Tài liệu học</h2>
+      <table id="materials-table" class="table mt-3">
+        <thead>
+          <tr><th>ID</th><th>Tiêu đề</th><th>Nội dung/Link</th><th>Ngày tạo</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
-    <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/course_detail.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const courseIdString = document.body.getAttribute('data-course-id');
-            const courseId = parseInt(courseIdString, 10);
-            if (typeof initCourseDetailPage === 'function' && !isNaN(courseId)) {
-                initCourseDetailPage(courseId);
-            } else {
-                console.error('Lỗi: Không tìm thấy hàm initCourseDetailPage hoặc ID khóa học không hợp lệ.');
-                alert('Lỗi tải trang. ID khóa học không hợp lệ.');
-                window.location.href = '/student/dashboard';
-            }
-        });
-    </script>
+    <!-- Bài tập -->
+    <div class="card" id="assignments-section" style="display:none;">
+      <h2>Bài tập</h2>
+      <table id="assignments-table" class="table mt-3">
+        <thead>
+          <tr>
+            <th>ID</th><th>Tiêu đề</th><th>Mô tả</th>
+            <th>Hạn nộp</th><th>Điểm tối đa</th><th>Trạng thái</th><th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="submitModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Nộp bài</h3>
+        <span class="close" id="closeModal">&times;</span>
+      </div>
+      <form id="submitForm">
+        <input type="hidden" id="submitAssignmentId">
+        <div class="form-group">
+          <label for="submitContent" class="form-label">Nội dung hoặc Link bài nộp:</label>
+          <textarea id="submitContent" class="form-control" rows="4"></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;">
+          <button type="submit" class="btn btn-primary">Gửi</button>
+          <button type="button" class="btn btn-secondary" id="cancelModal">Hủy</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/course_detail.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const id = parseInt(document.body.dataset.courseId);
+      if (typeof initCourseDetailPage === 'function' && !isNaN(id))
+        initCourseDetailPage(id);
+    });
+  </script>
 </body>
 </html>

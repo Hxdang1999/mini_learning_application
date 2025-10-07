@@ -81,3 +81,18 @@ class AssignmentRepository:
     
     def get_submission_by_id(self, submission_id):
         return Submission.query.get(submission_id)
+    
+    def update_submission_content(self, submission_id, content, submitted_at):
+        submission = Submission.query.get(submission_id)
+        if not submission:
+            return None
+        submission.content = content
+        submission.submitted_at = submitted_at
+        # Khi sinh viên nộp lại, điểm có thể reset về None (nếu bạn muốn chấm lại)
+        submission.score = None  
+        try:
+            db.session.commit()
+            return submission
+        except IntegrityError:
+            db.session.rollback()
+            return None

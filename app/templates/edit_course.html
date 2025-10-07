@@ -1,201 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Quản lý chi tiết Khóa học</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        .card-edit-course, .card-materials, .card-assignments, .card-pending-students, .card-active-students {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-        .form-group input[type="text"],
-        .form-group input[type="datetime-local"],
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #4f545c;
-            background-color: #40444b;
-            color: #ffffff;
-            border-radius: 5px;
-            box-sizing: border-box;
-            margin-top: 0.5rem;
-        }
-        .form-check {
-            margin-bottom: 1rem;
-        }
-        .form-check input[type="checkbox"] {
-            margin-right: 10px;
-        }
-        .stats {
-            font-style: italic;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Quản lý chi tiết Khóa học</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body data-course-id="{{ course_id }}">
-    <div class="navbar-top">
-        <div class="navbar-container">
-            <h1 class="navbar-brand">Quản lý Khóa học ID: <span id="course-id-display"></span></h1>
-            <div class="user-controls">
-                <button class="btn btn-primary" onclick="window.location.href='/teacher/dashboard'">Quay lại Dashboard</button>
-                <button class="btn btn-logout" onclick="logout()">Đăng xuất</button>
-            </div>
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3><i class="fas fa-graduation-cap"></i> ID: <span id="course-id-display">N/A</span></h3>
+    </div>
+    <div class="sidebar-user">
+      <i class="fas fa-chalkboard-teacher"></i> <span>Quản lý Khóa học</span>
+    </div>
+    <ul class="sidebar-menu">
+      <li id="edit-course-sidebar-link">
+        <a href="#" class="sidebar-link active" data-section="edit-course">
+          <i class="fas fa-cog"></i> <span>Thông tin Khóa học</span>
+        </a>
+      </li>
+      <li id="materials-sidebar-link">
+        <a href="#" class="sidebar-link" data-section="materials">
+          <i class="fas fa-file-alt"></i> <span>Quản lý Tài liệu</span>
+        </a>
+      </li>
+      <li id="assignments-sidebar-link">
+        <a href="#" class="sidebar-link" data-section="assignments">
+          <i class="fas fa-tasks"></i> <span>Quản lý Bài tập</span>
+        </a>
+      </li>
+      <li id="pending-students-sidebar-link">
+        <a href="#" class="sidebar-link" data-section="pending-students">
+          <i class="fas fa-user-clock"></i> <span>SV đợi duyệt</span>
+        </a>
+      </li>
+      <li id="active-students-sidebar-link">
+        <a href="#" class="sidebar-link" data-section="active-students">
+          <i class="fas fa-users"></i> <span>SV Tham gia</span>
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      <button class="btn btn-icon" onclick="window.location.href='/teacher/dashboard'" title="Quay lại Dashboard"><i class="fas fa-arrow-left"></i></button>
+      <button id="theme-toggle" class="btn btn-icon" title="Chế độ tối"><i class="fas fa-moon"></i></button>
+      <button id="sidebar-toggle" class="btn btn-icon" title="Thu gọn"><i class="fas fa-bars"></i></button>
+      <button id="logout-button" class="btn btn-icon" title="Đăng xuất" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-container" id="main-container">
+    <!-- === Sửa thông tin khóa học === -->
+    <div class="card card-edit-course" id="edit-course-section">
+      <h2>Sửa Khóa học</h2>
+      <form id="edit-course-form">
+        <div class="form-group mb-3">
+          <label for="course-title" class="form-label">Tiêu đề</label>
+          <input type="text" id="course-title" class="form-control" required>
         </div>
+        <div class="form-group mb-3">
+          <label for="course-description" class="form-label">Mô tả</label>
+          <textarea id="course-description" class="form-control"></textarea>
+        </div>
+        <div class="form-check mb-3">
+          <input type="checkbox" id="is-public" class="form-check-input">
+          <label for="is-public" class="form-label">Công khai (Bỏ qua xét duyệt)</label>
+        </div>
+        <p><strong>Ngày tạo:</strong> <span id="created-at-display"></span></p>
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+        <button type="button" id="delete-course-btn" class="btn btn-danger">Xóa Khóa học</button>
+      </form>
+      <div id="message-container" class="mt-3"></div>
     </div>
 
-    <div class="main-container">
-        <div class="card card-edit-course">
-            <h2>Sửa Khóa học</h2>
-            <form id="edit-course-form">
-                <div class="form-group">
-                    <label for="course-title">Tiêu đề</label>
-                    <input type="text" id="course-title" required>
-                </div>
-                <div class="form-group">
-                    <label for="course-description">Mô tả</label>
-                    <textarea id="course-description"></textarea>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" id="is-public">
-                    <label for="is-public">Công khai</label>
-                </div>
-                <p><strong>Ngày tạo:</strong> <span id="created-at-display"></span></p>
-                <button type="submit" class="btn btn-primary">Cập nhật</button>
-                <button type="button" id="delete-course-btn" class="btn btn-danger">Xóa Khóa học</button>
-            </form>
-            <div id="message-container" class="mt-3"></div>
+    <!-- === Quản lý Tài liệu === -->
+    <div class="card card-materials mt-4" id="materials-section" style="display: none;">
+      <h2>Quản lý Tài liệu</h2>
+      <form id="create-material-form" class="mb-4">
+        <div class="form-group mb-3">
+          <label for="material-title" class="form-label">Tiêu đề tài liệu</label>
+          <input type="text" id="material-title" class="form-control" placeholder="Tiêu đề tài liệu" required>
         </div>
-
-        <div class="card card-materials mt-4">
-            <h2>Quản lý Tài liệu</h2>
-            <form id="create-material-form">
-                <div class="form-group">
-                    <label for="material-title">Tiêu đề tài liệu</label>
-                    <input type="text" id="material-title" placeholder="Tiêu đề tài liệu" required>
-                </div>
-                <div class="form-group">
-                    <label for="material-content">Nội dung/Link</label>
-                    <textarea id="material-content" placeholder="Nội dung hoặc link tài liệu"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Thêm Tài liệu</button>
-            </form>
-            <table id="materials-table" class="table mt-3">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tiêu đề</th>
-                        <th>Nội dung/Link</th>
-                        <th>Ngày tạo</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+        <div class="form-group mb-3">
+          <label for="material-content" class="form-label">Nội dung/Link</label>
+          <textarea id="material-content" class="form-control" placeholder="Nội dung hoặc link tài liệu"></textarea>
         </div>
-
-        <div class="card card-pending-students mt-4" id="pending-students-section">
-            <h2>Danh sách Sinh viên đợi duyệt</h2>
-            <table id="pending-students-table" class="table mt-3">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>ID Sinh viên</th>
-                        <th>Ngày yêu cầu</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="card card-active-students mt-4">
-            <h2>Danh sách Sinh viên tham gia chính thức</h2>
-            <table id="active-students-table" class="table mt-3">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>ID Sinh viên</th>
-                        <th>Tên đăng nhập</th>
-                        <th>Ngày tham gia</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="card card-assignments mt-4">
-            <h2>Quản lý Bài tập</h2>
-            <form id="create-assignment-form">
-                <div class="form-group">
-                    <label for="assignment-title">Tiêu đề bài tập</label>
-                    <input type="text" id="assignment-title" placeholder="Tiêu đề bài tập" required>
-                </div>
-                <div class="form-group">
-                    <label for="assignment-description">Mô tả bài tập</label>
-                    <textarea id="assignment-description" placeholder="Mô tả chi tiết bài tập"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="assignment-deadline">Hạn nộp (tùy chọn)</label>
-                    <input type="datetime-local" id="assignment-deadline">
-                </div>
-                <div class="form-group">
-                    <label for="assignment-max-score">Điểm tối đa</label>
-                    <input type="number" id="assignment-max-score" value="100" min="0" step="0.1" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Thêm Bài tập</button>
-            </form>
-            <table id="assignments-table" class="table mt-3">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tiêu đề</th>
-                        <th>Mô tả</th>
-                        <th>Hạn nộp</th>
-                        <th>Điểm tối đa</th>
-                        <th>Thống kê</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <h3 class="mt-4">Bài nộp của sinh viên</h3>
-            <table id="submissions-table" class="table mt-3">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Sinh viên</th>
-                        <th>Nội dung/Link</th>
-                        <th>Điểm</th>
-                        <th>Ngày nộp</th>
-                        <th>Chấm điểm</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+        <button type="submit" class="btn btn-primary">Thêm Tài liệu</button>
+      </form>
+      <table id="materials-table" class="table mt-3">
+        <thead>
+          <tr><th>ID</th><th>Tiêu đề</th><th>Nội dung/Link</th><th>Ngày tạo</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
-    <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/edit_course.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const courseIdString = document.body.getAttribute('data-course-id');
-            const courseId = parseInt(courseIdString, 10);
-            if (typeof initEditCoursePage === 'function' && !isNaN(courseId)) {
-                initEditCoursePage(courseId);
-            } else {
-                console.error('Lỗi: Không tìm thấy hàm initEditCoursePage hoặc ID khóa học không hợp lệ.');
-                alert('Lỗi tải trang. ID khóa học không hợp lệ.');
-                window.location.href = '/teacher/dashboard';
-            }
-        });
-    </script>
+    <!-- === Quản lý Bài tập === -->
+    <div class="card card-assignments mt-4" id="assignments-section" style="display: none;">
+      <h2>Quản lý Bài tập</h2>
+      <form id="create-assignment-form" class="mb-4">
+        <div class="form-group mb-3">
+          <label for="assignment-title" class="form-label">Tiêu đề bài tập</label>
+          <input type="text" id="assignment-title" class="form-control" placeholder="Tiêu đề bài tập" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="assignment-description" class="form-label">Mô tả bài tập</label>
+          <textarea id="assignment-description" class="form-control" placeholder="Mô tả chi tiết bài tập"></textarea>
+        </div>
+        <div class="form-group mb-3">
+          <label for="assignment-deadline" class="form-label">Hạn nộp (tùy chọn)</label>
+          <input type="datetime-local" id="assignment-deadline" class="form-control">
+        </div>
+        <div class="form-group mb-3">
+          <label for="assignment-max-score" class="form-label">Điểm tối đa</label>
+          <input type="number" id="assignment-max-score" class="form-control" value="100" min="0" step="0.1" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Thêm Bài tập</button>
+      </form>
+
+      <table id="assignments-table" class="table mt-3">
+        <thead>
+          <tr>
+            <th>ID</th><th>Tiêu đề</th><th>Mô tả</th><th>Hạn nộp</th><th>Điểm tối đa</th><th>Thống kê</th><th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h3 class="mt-4">Bài nộp của sinh viên</h3>
+      <table id="submissions-table" class="table mt-3">
+        <thead>
+          <tr><th>ID</th><th>Sinh viên</th><th>Nội dung/Link</th><th>Điểm</th><th>Ngày nộp</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- === Sinh viên đợi duyệt === -->
+    <div class="card card-pending-students mt-4" id="pending-students-section" style="display: none;">
+      <h2>Danh sách Sinh viên đợi duyệt</h2>
+      <table id="pending-students-table" class="table mt-3">
+        <thead>
+          <tr><th>ID</th><th>ID Sinh viên</th><th>Ngày yêu cầu</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- === Sinh viên tham gia === -->
+    <div class="card card-active-students mt-4" id="active-students-section" style="display: none;">
+      <h2>Danh sách Sinh viên tham gia chính thức</h2>
+      <table id="active-students-table" class="table mt-3">
+        <thead>
+          <tr><th>ID</th><th>ID Sinh viên</th><th>Tên đăng nhập</th><th>Ngày tham gia</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==== Modal: Sửa tài liệu ==== -->
+  <div id="editMaterialModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Sửa Tài liệu</h3>
+        <span class="close-btn" onclick="document.getElementById('editMaterialModal').style.display='none'">&times;</span>
+      </div>
+      <form id="edit-material-form">
+        <input type="hidden" id="edit-material-id">
+        <input type="hidden" id="edit-material-course-id">
+        <div class="form-group mb-3">
+          <label for="edit-material-title" class="form-label">Tiêu đề</label>
+          <input type="text" id="edit-material-title" class="form-control" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-material-content" class="form-label">Nội dung/Link</label>
+          <textarea id="edit-material-content" class="form-control"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Cập nhật Tài liệu</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==== Modal: Sửa Bài tập ==== -->
+  <div id="editAssignmentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Sửa Bài tập</h3>
+        <span class="close-btn" onclick="document.getElementById('editAssignmentModal').style.display='none'">&times;</span>
+      </div>
+      <form id="edit-assignment-form">
+        <input type="hidden" id="edit-assignment-id">
+        <input type="hidden" id="edit-assignment-course-id">
+        <div class="form-group mb-3">
+          <label for="edit-assignment-title" class="form-label">Tiêu đề</label>
+          <input type="text" id="edit-assignment-title" class="form-control" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-assignment-description" class="form-label">Mô tả</label>
+          <textarea id="edit-assignment-description" class="form-control"></textarea>
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-assignment-deadline" class="form-label">Hạn nộp</label>
+          <input type="datetime-local" id="edit-assignment-deadline" class="form-control">
+        </div>
+        <div class="form-group mb-3">
+          <label for="edit-assignment-max-score" class="form-label">Điểm tối đa</label>
+          <input type="number" id="edit-assignment-max-score" class="form-control" min="0" step="0.1" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Cập nhật Bài tập</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==== Modal: Chấm điểm ==== -->
+  <div id="gradeSubmissionModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Chấm điểm Bài nộp</h3>
+        <span class="close-btn" onclick="document.getElementById('gradeSubmissionModal').style.display='none'">&times;</span>
+      </div>
+      <form id="grade-submission-form">
+        <input type="hidden" id="grade-submission-id">
+        <input type="hidden" id="grade-submission-course-id">
+        <input type="hidden" id="grade-assignment-id">
+        <p>Sinh viên: <strong id="grade-student-username"></strong></p>
+        <p>Nội dung nộp: <a id="grade-submission-content" href="#" target="_blank">Xem Link/Nội dung</a></p>
+        <div class="form-group mb-3">
+          <label for="grade-input" class="form-label">Điểm (0 - <span id="max-score-display">100</span>)</label>
+          <input type="number" id="grade-input" class="form-control" min="0" step="0.1" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Lưu điểm</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/logout.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/edit_course.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const courseIdString = document.body.getAttribute('data-course-id');
+      const courseId = parseInt(courseIdString, 10);
+      if (typeof initEditCoursePage === 'function' && !isNaN(courseId)) {
+        initEditCoursePage(courseId);
+      } else {
+        alert('Lỗi tải trang. ID khóa học không hợp lệ.');
+        window.location.href = '/teacher/dashboard';
+      }
+
+      // Đóng modal khi click ra ngoài
+      window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+          event.target.style.display = 'none';
+        }
+      }
+    });
+  </script>
 </body>
 </html>

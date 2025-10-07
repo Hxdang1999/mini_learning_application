@@ -74,18 +74,33 @@ class AssignmentService:
         assignment = self.assignment_repo.get_by_id(assignment_id)
         if not assignment:
             return {"message": "Assignment not found"}, 404
+
         enrollment = self.course_repo.get_enrollment(student_id, assignment.course_id)
         if not enrollment or enrollment.status != 'active':
             return {"message": "Forbidden. You are not enrolled or not active."}, 403
+
+        # Kiểm tra deadline
         if assignment.deadline and datetime.utcnow() > assignment.deadline:
             return {"message": "Submission closed. Deadline passed."}, 403
+
         existing_submission = self.assignment_repo.get_submission(assignment_id, student_id)
         if existing_submission:
-            return {"message": "You have already submitted this assignment"}, 409
+            # ✅ Cho phép nộp lại: cập nhật nội dung và thời gian nộp
+            updated_submission = self.assignment_repo.update_submission_content(
+                existing_submission.id,
+                content,
+                datetime.utcnow()
+            )
+            if not updated_submission:
+                return {"message": "Failed to update existing submission"}, 500
+            return {"message": "Resubmission successful. Your work has been updated."}, 200
+
+        # ✅ Nếu chưa có bài nộp trước đó → tạo mới
         submission = self.assignment_repo.create_submission(assignment_id, student_id, content)
         if not submission:
             return {"message": "Failed to submit assignment"}, 500
         return {"message": "Assignment submitted successfully", "submission_id": submission.id}, 201
+
 
     def grade_submission(self, teacher_id, submission_id, score):
         submission = self.assignment_repo.get_submission_by_id(submission_id)
