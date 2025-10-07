@@ -265,10 +265,7 @@ async function initEditCoursePage(courseId) {
     }
 }
 
-// Giữ nguyên các hàm loadMaterials, editMaterial, deleteMaterial, loadPendingStudents, loadActiveStudents, 
-// handleEnrollmentAction, teacherUnenroll, loadAssignments, editAssignment, deleteAssignment, 
-// loadSubmissions, gradeSubmission như file cũ.
-// ... (Các hàm này đã được định nghĩa trong file edit_course.js cũ) ...
+
 
 async function loadMaterials(courseId) {
     const token = localStorage.getItem('access_token');
@@ -734,3 +731,52 @@ if (exportBtn) {
     }
   });
 }
+// ====== LƯU ĐIỂM SAU KHI NHẬP (SỬA CHÍNH XÁC VỚI HTML) ======
+document.getElementById("grade-submission-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const token = localStorage.getItem("access_token");
+  const submissionId = document.getElementById("grade-submission-id").value;
+  const assignmentId = document.getElementById("grade-assignment-id").value;
+  const score = parseFloat(document.getElementById("grade-input").value);
+  const courseId = document.getElementById("grade-submission-course-id").value;
+
+  if (!token) {
+    alert("Vui lòng đăng nhập lại.");
+    window.location.href = "/login";
+    return;
+  }
+
+  if (isNaN(score)) {
+    alert("Vui lòng nhập điểm hợp lệ (0–100).");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/assignments/submissions/${submissionId}/grade`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ score })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      alert(data.message || "Lỗi khi lưu điểm.");
+      return;
+    }
+
+    alert("✅ " + data.message);
+    document.getElementById("gradeSubmissionModal").style.display = "none";
+
+    // Tải lại danh sách bài nộp để hiển thị điểm mới
+    if (typeof loadSubmissions === "function") {
+      loadSubmissions(assignmentId, courseId);
+    }
+  } catch (err) {
+    console.error("Lỗi khi gửi điểm:", err);
+    alert("Không thể gửi điểm lên server.");
+  }
+});

@@ -218,7 +218,7 @@ def teacher_unenroll(enrollment_id):
 def export_course_grades(course_id):
     from io import BytesIO
     from openpyxl import Workbook
-    from openpyxl.styles import Font, Alignment, PatternFill
+    from openpyxl.styles import Font, Alignment
     from datetime import datetime
     from flask import send_file, jsonify
 
@@ -226,22 +226,16 @@ def export_course_grades(course_id):
     if current_user['role'] not in ['teacher', 'admin']:
         return jsonify({"message": "Permission denied"}), 403
 
-    # Thông tin khóa học
     course = Course.query.get(course_id)
     if not course:
         return jsonify({"message": "Course not found"}), 404
 
     teacher = User.query.get(course.teacher_id)
     teacher_name = teacher.username if teacher else "—"
-
-    # Lấy danh sách bài tập
     assignments = Assignment.query.filter_by(course_id=course_id).all()
-
-    # Lấy danh sách sinh viên active
     enrollments = Enrollment.query.filter_by(course_id=course_id, status='active').all()
     students = [User.query.get(e.student_id) for e in enrollments if e.student_id]
 
-    # Tạo workbook Excel
     wb = Workbook()
     ws = wb.active
     ws.title = "Bảng điểm"
@@ -269,10 +263,6 @@ def export_course_grades(course_id):
         cell.font = Font(bold=True)
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
-    header_fill = PatternFill(start_color="E0E0E0", end_color="E0E0E0", fill_type="solid")
-    for cell in ws[6]:
-        cell.fill = header_fill
-
     # ======= DỮ LIỆU SINH VIÊN =======
     for idx, student in enumerate(students, start=1):
         row = [idx, student.id, student.username]
@@ -287,22 +277,14 @@ def export_course_grades(course_id):
                 scores.append(score)
             else:
                 row.append("—")
-
         avg = round(sum(scores) / len(scores), 2) if scores else "—"
         row.append(avg)
         ws.append(row)
 
-    # ======= CĂN GIỮA, TÔ MÀU THEO ĐIỂM =======
-    for r_idx, row in enumerate(ws.iter_rows(min_row=7, max_row=ws.max_row), start=7):
-        for c_idx, cell in enumerate(row, start=1):
+    # ======= CĂN GIỮA KHÔNG TÔ MÀU =======
+    for row in ws.iter_rows(min_row=7, max_row=ws.max_row):
+        for cell in row:
             cell.alignment = Alignment(horizontal="center", vertical="center")
-            if c_idx > 3 and isinstance(cell.value, (float, int)):  # cột điểm
-                if cell.value >= 8:
-                    cell.fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")  # xanh lá
-                elif cell.value >= 5:
-                    cell.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")  # vàng
-                else:
-                    cell.fill = PatternFill(start_color="F8CBAD", end_color="F8CBAD", fill_type="solid")  # đỏ
 
     # ======= XUẤT FILE =======
     output = BytesIO()
