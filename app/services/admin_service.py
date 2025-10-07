@@ -47,8 +47,6 @@ class AdminService:
 
     def get_users(self, admin_id):
         admin = self.admin_repo.get_admin_by_id(admin_id)
-        if not admin:
-            return {"message": "Admin not found"}, 404
         if admin.is_root:
             all_users = self.admin_repo.get_all_users()
             grouped = {}
@@ -60,9 +58,12 @@ class AdminService:
                     "username": user.username,
                     "role": user.role,
                     "status": user.status,
-                    "is_locked": user.is_locked
+                    "is_locked": user.is_locked,
+                    "manager": manager_name,  
+                    "created_at": user.created_at.strftime("%Y-%m-%d %H:%M:%S") if user.created_at else ""
                 })
             return grouped, 200
+
         else:
             users = self.admin_repo.get_users_by_manager(admin_id)
             remaining = admin.max_users - self.admin_repo.count_active_users(admin_id)
@@ -72,7 +73,9 @@ class AdminService:
                     "username": u.username,
                     "role": u.role,
                     "status": u.status,
-                    "is_locked": u.is_locked
+                    "is_locked": u.is_locked,
+                    "manager": admin.username,
+                    "created_at": u.created_at.strftime("%Y-%m-%d %H:%M:%S") if u.created_at else ""
                 } for u in users],
                 "remaining_slots": remaining
             }, 200
@@ -109,5 +112,21 @@ class AdminService:
             pending = self.admin_repo.get_pending_users(admin_id)
         return {"pending_users": [{"id": u.id, "username": u.username, "role": u.role} for u in pending]}, 200
 
-    def approve_user(self, admin_id, user_id, approve):  # Mới: Thêm phương thức approve_user
+    def approve_user(self, admin_id, user_id, approve): 
         return self.auth_service.approve_user(admin_id, user_id, approve)
+    
+    def lock_user(self, admin_id, user_id, lock):
+        admin = self.admin_repo.get_admin_by_id(admin_id)
+        user = self.auth_repo.get_user_by_id(user_id)
+
+        if not admin or not user:
+            return {"message": "Admin hoặc User không tồn tại"}, 404
+
+        if admin.is_root or user.manager_id == admin_id:
+            updated = self.admin_repo.update_lock_status(user_id, lock)
+            if updated:
+                msg = "Đã khóa user" if lock else "Đã mở khóa user"
+                return {"message": msg}, 200
+            return {"message": "Không thể cập nhật trạng thái khóa"}, 500
+
+        return {"message": "Không có quyền khóa user này"}, 403

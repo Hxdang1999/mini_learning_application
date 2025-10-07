@@ -1,6 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.admin_service import AdminService
+from openpyxl import Workbook
+from flask import send_file
+import io
+from datetime import timedelta
 
 admin_bp = Blueprint('admin_bp', __name__, url_prefix='/api/admin')
 admin_service = AdminService()
@@ -114,3 +118,74 @@ def approve_user(user_id):
     approve = data.get('approve', True)
     response, status = admin_service.approve_user(current_user['id'], user_id, approve)
     return jsonify(response), status
+
+@admin_bp.route('/export-users', methods=['GET'])
+@jwt_required()
+def export_users():
+    """
+    Xuất danh sách user ra file Excel (có lọc admin phụ, trạng thái khóa, thời gian tạo).
+    """
+    current_user = get_jwt_identity()
+    if current_user['role'] != 'admin':
+        return jsonify({"message": "Only admins can export users"}), 403
+
+    admin_id = request.args.get('admin_id', 'all')
+
+    users_data, status = admin_service.get_users(current_user['id'])
+    if status != 200:
+        return jsonify(users_data), status
+
+    # Chuẩn hóa dữ liệu user
+    users_list = []
+    if isinstance(users_data, dict):
+        if "users" in users_data:
+            users_list = users_data["users"]
+        else:
+            for _, ulist in users_data.items():
+                if isinstance(ulist, list):
+                    users_list.extend(ulist)
+    elif isinstance(users_data, list):
+        users_list = users_data
+
+    if not users_list:
+        return jsonify({"message": "No users found"}), 404
+
+    # Tạo workbook Excel
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Users List"
+
+    # Tiêu đề các cột
+    ws.append(["ID", "Username", "Role", "Status", "Locked", "Sub Admin", "Created At"])
+
+    for u in users_list:
+        created_at = ""
+        if u.get("created_at"):
+            # Nếu là chuỗi thì parse, nếu là datetime thì cộng giờ VN
+            dt = u["created_at"]
+            if isinstance(dt, str):
+                created_at = dt
+            else:
+                created_at = (dt + timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S")
+
+        ws.append([
+            u.get("id"),
+            u.get("username"),
+            u.get("role"),
+            u.get("status", "active"),
+            "T" if u.get("is_locked") else "F",
+            u.get("manager", "—"),
+            created_at
+        ])
+
+    # Xuất ra file Excel
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="users_export.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )

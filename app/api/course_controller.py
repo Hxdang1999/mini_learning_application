@@ -4,6 +4,16 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.course_service import CourseService
 from app.models.enrollment import Enrollment
 from app.repositories.auth_repository import AuthRepository
+from io import BytesIO
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill
+from datetime import datetime
+from app.models.course import Course
+from app.models.assignment import Assignment
+from app.models.user import User
+from app.models.assignment import Submission
+from app import db
+from flask import send_file, jsonify
 
 course_bp = Blueprint('course_bp', __name__, url_prefix='/api/courses')
 course_service = CourseService()
@@ -202,3 +212,107 @@ def teacher_unenroll(enrollment_id):
         return jsonify({"message": "Only teachers can unenroll students"}), 403
     response, status = course_service.teacher_unenroll_student(current_user['id'], enrollment_id)
     return jsonify(response), status
+
+@course_bp.route('/<int:course_id>/export-grades', methods=['GET'])
+@jwt_required()
+def export_course_grades(course_id):
+    from io import BytesIO
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment, PatternFill
+    from datetime import datetime
+    from flask import send_file, jsonify
+
+    current_user = get_jwt_identity()
+    if current_user['role'] not in ['teacher', 'admin']:
+        return jsonify({"message": "Permission denied"}), 403
+
+    # Thông tin khóa học
+    course = Course.query.get(course_id)
+    if not course:
+        return jsonify({"message": "Course not found"}), 404
+
+    teacher = User.query.get(course.teacher_id)
+    teacher_name = teacher.username if teacher else "—"
+
+    # Lấy danh sách bài tập
+    assignments = Assignment.query.filter_by(course_id=course_id).all()
+
+    # Lấy danh sách sinh viên active
+    enrollments = Enrollment.query.filter_by(course_id=course_id, status='active').all()
+    students = [User.query.get(e.student_id) for e in enrollments if e.student_id]
+
+    # Tạo workbook Excel
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Bảng điểm"
+
+    # ======= TIÊU ĐỀ =======
+    ws.merge_cells("A1:E1")
+    ws["A1"] = "Mini Learning Application"
+    ws["A1"].font = Font(bold=True, size=14)
+    ws["A1"].alignment = Alignment(horizontal="center")
+
+    ws.append([])
+    ws.append([f"Khóa học: {course.title} (ID: {course.id})"])
+    ws.append([f"Giảng viên: {teacher_name} (ID: {teacher.id if teacher else '—'})"])
+    ws.append([f"Ngày xuất: {datetime.now().strftime('%d/%m/%Y %H:%M')}"])
+    ws.append([])
+
+    # ======= HEADER =======
+    headers = ["STT", "ID SV", "Tên sinh viên"]
+    for a in assignments:
+        headers.append(a.title)
+    headers.append("Điểm trung bình")
+    ws.append(headers)
+
+    for cell in ws[ws.max_row]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    header_fill = PatternFill(start_color="E0E0E0", end_color="E0E0E0", fill_type="solid")
+    for cell in ws[6]:
+        cell.fill = header_fill
+
+    # ======= DỮ LIỆU SINH VIÊN =======
+    for idx, student in enumerate(students, start=1):
+        row = [idx, student.id, student.username]
+        scores = []
+        for a in assignments:
+            submission = Submission.query.filter_by(
+                assignment_id=a.id, student_id=student.id
+            ).first()
+            if submission and submission.score is not None:
+                score = float(submission.score)
+                row.append(score)
+                scores.append(score)
+            else:
+                row.append("—")
+
+        avg = round(sum(scores) / len(scores), 2) if scores else "—"
+        row.append(avg)
+        ws.append(row)
+
+    # ======= CĂN GIỮA, TÔ MÀU THEO ĐIỂM =======
+    for r_idx, row in enumerate(ws.iter_rows(min_row=7, max_row=ws.max_row), start=7):
+        for c_idx, cell in enumerate(row, start=1):
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            if c_idx > 3 and isinstance(cell.value, (float, int)):  # cột điểm
+                if cell.value >= 8:
+                    cell.fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")  # xanh lá
+                elif cell.value >= 5:
+                    cell.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")  # vàng
+                else:
+                    cell.fill = PatternFill(start_color="F8CBAD", end_color="F8CBAD", fill_type="solid")  # đỏ
+
+    # ======= XUẤT FILE =======
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    filename = f"course_{course_id}_grades.xlsx"
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )

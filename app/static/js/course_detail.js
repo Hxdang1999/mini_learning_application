@@ -162,12 +162,25 @@ async function submitAssignment(courseId) {
       },
       body: JSON.stringify({ content })
     });
+
     const data = await res.json();
-    alert(data.message || 'Nộp bài thành công');
+
+    if (res.status === 403 && data.message?.toLowerCase().includes('late')) {
+      alert('⏰ Bạn đã nộp TRỄ HẠN, vui lòng liên hệ giảng viên!');
+      return;
+    }
+    
+    if (!res.ok) {
+      alert(data.message || 'Không thể nộp bài.');
+      return;
+    }
+
+    alert(data.message || 'Nộp bài thành công!');
     modal.style.display = 'none';
     document.getElementById('submitContent').value = '';
     loadAssignments(courseId);
-  } catch {
-    alert('Lỗi khi nộp bài');
+  } catch (error) {
+    console.error('Lỗi khi nộp bài:', error);
+    alert('Lỗi kết nối khi nộp bài.');
   }
 }

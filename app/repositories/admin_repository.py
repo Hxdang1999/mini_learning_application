@@ -74,3 +74,11 @@ class AdminRepository:
         if manager_id:
             query = query.filter_by(manager_id=manager_id)
         return query.all()
+    
+    def update_lock_status(self, user_id, lock):
+        user = User.query.get(user_id)
+        if not user:
+            return False
+        user.is_locked = lock
+        db.session.commit()
+        return True

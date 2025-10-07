@@ -113,14 +113,24 @@ class CourseService:
 
     # Phương thức mới: Buộc rời sinh viên khỏi khóa học
     def teacher_unenroll_student(self, teacher_id, enrollment_id):
-        enrollment = self.course_repo.get_enrollment_by_id(enrollment_id)  # Giả sử bạn thêm phương thức này
+        enrollment = self.course_repo.get_enrollment_by_id(enrollment_id)
         if not enrollment:
             return {"message": "Enrollment not found"}, 404
+
         course = self.course_repo.get_by_id(enrollment.course_id)
-        if course.teacher_id != teacher_id:
+        if not course or course.teacher_id != teacher_id:
             return {"message": "Forbidden"}, 403
+
+        # Nếu là khóa riêng tư → chuyển thành pending (chờ duyệt lại)
+        if not course.is_public:
+            enrollment.status = "pending"
+            db.session.commit()
+            return {"message": "Student has been removed and now must request re-approval."}, 200
+
+        # Nếu là khóa công khai → xóa hẳn enrollment, không cho vào lại
         self.course_repo.unenroll_student_from_course(enrollment)
-        return {"message": "Student unenrolled successfully"}, 200
+        return {"message": "Student forcibly removed and cannot rejoin this public course."}, 200
+
     
 
 

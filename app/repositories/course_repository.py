@@ -83,3 +83,23 @@ class CourseRepository:
     
     def get_enrollment_by_id(self, enrollment_id):
         return Enrollment.query.get(enrollment_id)
+    
+    def enroll_student(self, student_id, course_id):
+        course = self.course_repo.get_by_id(course_id)
+        if not course:
+            return {"message": "Course not found."}, 404
+
+        existing = self.course_repo.get_enrollment(student_id, course_id)
+        if existing:
+            # Nếu đã bị buộc rời khỏi khóa công khai, cấm đăng ký lại
+            if course.is_public and existing.status == 'removed':
+                return {"message": "You cannot rejoin this public course."}, 403
+            return {"message": "Already enrolled or requested."}, 409
+
+        enrollment = self.course_repo.enroll_student_in_course(student_id, course_id, is_public=course.is_public)
+        if not enrollment:
+            return {"message": "Failed to enroll. Possibly already requested."}, 409
+
+        if course.is_public:
+            return {"message": "Enrolled successfully."}, 200
+        return {"message": "Enrollment request submitted. Waiting for approval."}, 202

@@ -389,3 +389,57 @@ async function approveUser(userId, approve) {
         alert('Có lỗi xảy ra khi duyệt/từ chối user.');
     }
 }
+// Khi DOM load xong thì nạp danh sách admin phụ vào bộ lọc
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadAdminFilter();
+    const exportBtn = document.getElementById('export-users-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', handleExportExcel);
+    }
+});
+
+async function loadAdminFilter() {
+    const token = localStorage.getItem('access_token');
+    const select = document.getElementById('admin-filter');
+    if (!select) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/sub-admins`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        data.sub_admins.forEach(admin => {
+            const option = document.createElement('option');
+            option.value = admin.id;
+            option.textContent = `${admin.username}`;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error('Không thể tải danh sách admin:', err);
+    }
+}
+
+async function handleExportExcel() {
+    const token = localStorage.getItem('access_token');
+    const selectedAdmin = document.getElementById('admin-filter').value;
+    try {
+        const response = await fetch(`${API_BASE_URL}/export-users?admin_id=${selectedAdmin}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            alert('Lỗi xuất file: ' + err.message);
+            return;
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users_export.xlsx';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('Lỗi khi export excel:', err);
+        alert('Không thể xuất danh sách user.');
+    }
+}

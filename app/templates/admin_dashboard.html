@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
+
 <body>
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
@@ -46,7 +48,8 @@
         <div class="sidebar-footer">
             <button id="theme-toggle" class="btn btn-icon" title="Chế độ tối"><i class="fas fa-moon"></i></button>
             <button id="sidebar-toggle" class="btn btn-icon" title="Thu gọn"><i class="fas fa-bars"></i></button>
-            <button id="logout-button" class="btn btn-icon" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></button>
+            <button id="logout-button" class="btn btn-icon" title="Đăng xuất"><i
+                    class="fas fa-sign-out-alt"></i></button>
         </div>
     </div>
 
@@ -55,7 +58,8 @@
         <div class="card" id="root-admin-section" style="display:none;">
             <h2>Quản lý Admin phụ</h2>
             <form id="create-sub-admin-form">
-                <input type="text" id="sub-username" class="form-control" placeholder="Tên đăng nhập admin phụ" required>
+                <input type="text" id="sub-username" class="form-control" placeholder="Tên đăng nhập admin phụ"
+                    required>
                 <input type="password" id="sub-password" class="form-control" placeholder="Mật khẩu" required>
                 <input type="number" id="max-users" class="form-control" placeholder="Số user tối đa" required>
                 <button type="submit" class="btn btn-primary">Tạo Admin phụ</button>
@@ -75,8 +79,18 @@
         </div>
 
         <div class="card" id="manage-users-section">
-            <h2>Quản lý User</h2>
-            <p>Số slot còn lại: <span id="remaining-slots">0</span></p>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <h2 style="margin: 0;">Quản lý User</h2>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <select id="admin-filter" class="form-control" style="width: 180px;">
+                        <option value="all">Tất cả Admin</option>
+                    </select>
+                    <button id="export-users-btn" class="btn btn-primary">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                </div>
+            </div>            
+
             <table id="users-table" class="table">
                 <thead>
                     <tr>
@@ -129,4 +143,5 @@
     <script src="/static/js/logout.js"></script>
     <script src="/static/js/admin_dashboard.js"></script>
 </body>
+
 </html>

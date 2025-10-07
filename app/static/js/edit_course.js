@@ -700,3 +700,37 @@ async function gradeSubmission(submissionId, courseId, assignmentId) {
         alert("Không thể tải dữ liệu bài nộp.");
     }
 }
+
+const exportBtn = document.getElementById('exportGradesBtn');
+if (exportBtn) {
+  exportBtn.addEventListener('click', async () => {
+    const token = localStorage.getItem('access_token');
+    // Lấy courseId từ URL hoặc DOM
+    const pathParts = window.location.pathname.split('/');
+    const courseId = pathParts[pathParts.length - 1];
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/courses/${courseId}/export-grades`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.message || 'Không thể xuất bảng điểm');
+        return;
+      }
+
+      // Nhận blob và tải file
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `course_${courseId}_grades.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Lỗi khi xuất bảng điểm:', err);
+      alert('Lỗi kết nối khi xuất bảng điểm.');
+    }
+  });
+}
