@@ -189,3 +189,10 @@ def export_users():
         download_name="users_export.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+@admin_bp.route('/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+    current_user = get_jwt_identity()
+    response, status = admin_service.delete_user(current_user['id'], user_id)
+    return jsonify(response), status

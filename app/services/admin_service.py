@@ -130,3 +130,48 @@ class AdminService:
             return {"message": "Không thể cập nhật trạng thái khóa"}, 500
 
         return {"message": "Không có quyền khóa user này"}, 403
+    def delete_user(self, admin_id, user_id):
+        from app import db
+        from app.models.course import Course
+        from app.models.enrollment import Enrollment
+        from app.models.assignment import Assignment, Submission
+        from app.models.material import Material  # ✅ THÊM DÒNG NÀY
+
+        admin = self.admin_repo.get_admin_by_id(admin_id)
+        user = self.auth_repo.get_user_by_id(user_id)
+        if not admin or not user:
+            return {"message": "Admin hoặc User không tồn tại"}, 404
+
+        # Cho phép root hoặc admin phụ của user đó
+        if not (admin.is_root or user.manager_id == admin_id or admin.is_root):
+            return {"message": "Không có quyền xóa user này"}, 403
+
+        try:
+            if user.role == 'teacher':
+                teacher_courses = Course.query.filter_by(teacher_id=user.id).all()
+                for course in teacher_courses:
+                    # ✅ Xóa materials trước
+                    Material.query.filter_by(course_id=course.id).delete()
+
+                    # Xóa submissions trong assignment
+                    for a in course.assignments:
+                        Submission.query.filter_by(assignment_id=a.id).delete()
+
+                    # Xóa assignment và enrollment
+                    Assignment.query.filter_by(course_id=course.id).delete()
+                    Enrollment.query.filter_by(course_id=course.id).delete()
+
+                    # Cuối cùng xóa khóa học
+                    db.session.delete(course)
+
+            elif user.role == 'student':
+                Enrollment.query.filter_by(student_id=user.id).delete()
+                Submission.query.filter_by(student_id=user.id).delete()
+
+            db.session.delete(user)
+            db.session.commit()
+            return {"message": f"Đã xóa user '{user.username}' thành công"}, 200
+
+        except Exception as e:
+            db.session.rollback()
+            return {"message": f"Lỗi khi xóa user: {str(e)}"}, 500

@@ -249,9 +249,27 @@ function addUserRow(tableBody, user, manager) {
         <td>
             <button onclick="resetPassword(${user.id})">Reset PW</button>
             <button onclick="lockUser(${user.id}, ${!user.is_locked})">${user.is_locked ? 'Unlock' : 'Lock'}</button>
+            <button onclick="deleteUser(${user.id})">Xóa</button>
         </td>
     `;
     tableBody.appendChild(row);
+}
+
+async function deleteUser(userId) {
+    if (!confirm('Bạn có chắc muốn xóa user này không?')) return;
+    const token = localStorage.getItem('access_token');
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        alert(data.message);
+        if (response.ok) loadUsers();
+    } catch (error) {
+        console.error('Lỗi khi xóa user:', error);
+        alert('Có lỗi xảy ra khi xóa user.');
+    }
 }
 
 async function resetPassword(userId) {

@@ -82,3 +82,37 @@ class AdminRepository:
         user.is_locked = lock
         db.session.commit()
         return True
+    
+    def delete_user(self, user_id):
+        from app.models.course import Course
+        from app.models.enrollment import Enrollment
+        from app.models.assignment import Assignment, Submission
+        from app.models.user import User
+
+        user = User.query.get(user_id)
+        if not user:
+            return False, "User not found"
+
+        # Nếu là giảng viên → xóa toàn bộ khóa học do họ dạy
+        if user.role == 'teacher':
+            teacher_courses = Course.query.filter_by(teacher_id=user.id).all()
+            for c in teacher_courses:
+                # Xóa submissions trong assignment
+                for a in c.assignments:
+                    Submission.query.filter_by(assignment_id=a.id).delete()
+                # Xóa assignment
+                Assignment.query.filter_by(course_id=c.id).delete()
+                # Xóa enrollment trong khóa học đó
+                Enrollment.query.filter_by(course_id=c.id).delete()
+                # Xóa khóa học
+                db.session.delete(c)
+
+        # Nếu là sinh viên → hủy đăng ký các khóa học
+        elif user.role == 'student':
+            Enrollment.query.filter_by(student_id=user.id).delete()
+            Submission.query.filter_by(student_id=user.id).delete()
+
+        # Cuối cùng xóa user
+        db.session.delete(user)
+        db.session.commit()
+        return True, "User deleted successfully"

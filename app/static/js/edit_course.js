@@ -268,46 +268,52 @@ async function initEditCoursePage(courseId) {
 
 
 async function loadMaterials(courseId) {
-    const token = localStorage.getItem('access_token');
-    try {
-        const response = await fetch(`${API_BASE_URL}/materials/${courseId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            console.error('Lỗi tải tài liệu:', data.message);
-            // alert(`Lỗi tải tài liệu: ${data.message}`); // Bỏ alert để tránh làm gián đoạn lúc load
-            return;
-        }
-        console.log('Dữ liệu tài liệu:', data);
-        const tbody = document.querySelector('#materials-table tbody');
-        if (!tbody) {
-            console.error('Không tìm thấy bảng tài liệu');
-            return;
-        }
-        tbody.innerHTML = '';
-        if (!data.materials || data.materials.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5">Không có tài liệu nào.</td></tr>';
-            return;
-        }
-        data.materials.forEach(m => {
-            const row = tbody.insertRow();
-            row.innerHTML = `
-                <td>${m.id}</td>
-                <td>${m.title}</td>
-                <td style="white-space: pre-wrap; word-wrap: break-word;">${m.content || 'N/A'}</td>
-                <td>${m.created_at}</td>
-                <td>
-                    <button class="btn btn-sm btn-primary" onclick="editMaterial(${m.id}, ${courseId}, '${m.title.replace(/'/g, "\\'")}', '${m.content ? m.content.replace(/'/g, "\\'") : ''}')">Sửa</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteMaterial(${m.id}, ${courseId})">Xóa</button>
-                </td>
-            `;
-        });
-    } catch (err) {
-        console.error('Lỗi tải tài liệu:', err);
-        // alert('Lỗi kết nối khi tải tài liệu'); // Bỏ alert để tránh làm gián đoạn lúc load
+  const token = localStorage.getItem('access_token');
+  try {
+    const response = await fetch(`${API_BASE_URL}/materials/${courseId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await response.json();
+    if (!response.ok) return;
+
+    const tbody = document.querySelector('#materials-table tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!data.materials || data.materials.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5">Không có tài liệu nào.</td></tr>';
+      return;
     }
+
+    data.materials.forEach(m => {
+      const row = tbody.insertRow();
+      row.insertCell().textContent = m.id;
+      row.insertCell().textContent = m.title;
+      row.insertCell().innerHTML = `<div style="white-space: pre-wrap;">${m.content || 'N/A'}</div>`;
+      row.insertCell().textContent = m.created_at;
+
+      const actions = row.insertCell();
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn btn-sm btn-primary';
+      editBtn.textContent = 'Sửa';
+      editBtn.addEventListener('click', () => {
+        editMaterial(m.id, courseId, m.title, m.content);
+      });
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn btn-sm btn-danger';
+      delBtn.textContent = 'Xóa';
+      delBtn.addEventListener('click', () => {
+        deleteMaterial(m.id, courseId);
+      });
+
+      actions.append(editBtn, delBtn);
+    });
+  } catch (err) {
+    console.error('Lỗi tải tài liệu:', err);
+  }
 }
+
 
 async function editMaterial(materialId, courseId, title, content) {
     // Mở modal
@@ -481,72 +487,77 @@ async function teacherUnenroll(enrollmentId, courseId) {
 }
 
 async function loadAssignments(courseId) {
-    console.log(`Load assignments for course ${courseId}`);
-    const token = localStorage.getItem('access_token');
-    try {
-        const response = await fetch(`${API_BASE_URL}/assignments/${courseId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-        console.log('Dữ liệu bài tập:', data);
-        if (!response.ok) {
-            console.error('Lỗi tải bài tập:', data.message);
-            // alert(`Lỗi tải bài tập: ${data.message}`); // Bỏ alert
-            return;
-        }
-        const tbody = document.querySelector('#assignments-table tbody');
-        const submissionsTbody = document.querySelector('#submissions-table tbody'); // Reset submissions table
-        if (!tbody || !submissionsTbody) {
-            console.error('Không tìm thấy bảng bài tập hoặc bài nộp');
-            // alert('Lỗi giao diện: Không tìm thấy bảng bài tập');
-            return;
-        }
-        tbody.innerHTML = '';
-        submissionsTbody.innerHTML = '<tr><td colspan="6">Chọn bài tập để xem bài nộp.</td></tr>'; // Thiết lập nội dung mặc định
+  console.log(`Load assignments for course ${courseId}`);
+  const token = localStorage.getItem('access_token');
+  try {
+    const response = await fetch(`${API_BASE_URL}/assignments/${courseId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await response.json();
+    console.log('Dữ liệu bài tập:', data);
 
-        if (!data.assignments || data.assignments.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7">Không có bài tập nào.</td></tr>';
-            return;
-        }
-        for (const a of data.assignments) {
-            let stats = { average: 0, max: 0, min: 0, count: 0 };
-            try {
-                const statsResponse = await fetch(`${API_BASE_URL}/assignments/${a.id}/stats`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (statsResponse.ok) {
-                    stats = await statsResponse.json();
-                    console.log(`Thống kê bài tập ${a.id}:`, stats);
-                } else {
-                    console.error(`Lỗi tải thống kê bài tập ${a.id}:`, await statsResponse.json());
-                }
-            } catch (err) {
-                console.error(`Lỗi tải thống kê bài tập ${a.id}:`, err);
-            }
-            const row = tbody.insertRow();
-            // Xử lý chuỗi description và title để tránh lỗi trong onclick
-            const assignmentTitle = a.title.replace(/'/g, "\\'");
-            const assignmentDescription = (a.description || '').replace(/'/g, "\\'");
+    if (!response.ok) return;
 
-            row.innerHTML = `
-                <td>${a.id}</td>
-                <td>${a.title}</td>
-                <td style="white-space: pre-wrap; word-wrap: break-word;">${a.description || 'N/A'}</td>
-                <td>${a.deadline || 'Không có'}</td>
-                <td>${a.max_score}</td>
-                <td class="stats">TB: ${stats.average.toFixed(2)}, Cao: ${stats.max}, Thấp: ${stats.min}, Số bài: ${stats.count}</td>
-                <td>
-                    <button class="btn btn-sm btn-primary" onclick="editAssignment(${a.id}, ${courseId}, '${assignmentTitle}', '${assignmentDescription}', '${a.deadline || ''}', ${a.max_score})">Sửa</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteAssignment(${a.id}, ${courseId})">Xóa</button>
-                    <button class="btn btn-sm btn-info" onclick="loadSubmissions(${a.id}, ${courseId})">Xem bài nộp</button>
-                </td>
-            `;
-        }
-    } catch (err) {
-        console.error('Lỗi tải bài tập:', err);
-        // alert('Lỗi kết nối khi tải bài tập'); // Bỏ alert
+    const tbody = document.querySelector('#assignments-table tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!data.assignments || data.assignments.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7">Không có bài tập nào.</td></tr>';
+      return;
     }
+
+    for (const a of data.assignments) {
+      const row = tbody.insertRow();
+      const stats = await loadAssignmentStats(a.id, token);
+
+      row.insertCell().textContent = a.id;
+      row.insertCell().textContent = a.title;
+      row.insertCell().innerHTML = `<div style="white-space: pre-wrap;">${a.description || 'N/A'}</div>`;
+      row.insertCell().textContent = a.deadline || 'Không có';
+      row.insertCell().textContent = a.max_score;
+      row.insertCell().textContent = `TB: ${stats.average.toFixed(2)}, Cao: ${stats.max}, Thấp: ${stats.min}, Số bài: ${stats.count}`;
+
+      // Cột hành động
+      const actionsCell = row.insertCell();
+      const editBtn = document.createElement("button");
+      editBtn.className = "btn btn-sm btn-primary";
+      editBtn.textContent = "Sửa";
+      editBtn.addEventListener("click", () => {
+        editAssignment(a.id, courseId, a.title, a.description, a.deadline, a.max_score);
+      });
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn btn-sm btn-danger";
+      delBtn.textContent = "Xóa";
+      delBtn.addEventListener("click", () => {
+        deleteAssignment(a.id, courseId);
+      });
+
+      const viewBtn = document.createElement("button");
+      viewBtn.className = "btn btn-sm btn-info";
+      viewBtn.textContent = "Xem bài nộp";
+      viewBtn.addEventListener("click", () => {
+        loadSubmissions(a.id, courseId);
+      });
+
+      actionsCell.append(editBtn, delBtn, viewBtn);
+    }
+  } catch (err) {
+    console.error('Lỗi tải bài tập:', err);
+  }
 }
+
+async function loadAssignmentStats(id, token) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/assignments/${id}/stats`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) return await res.json();
+  } catch {}
+  return { average: 0, max: 0, min: 0, count: 0 };
+}
+
 
 async function editAssignment(id, courseId, title, description, deadline, max_score) {
     const modal = document.getElementById("editAssignmentModal");
@@ -556,10 +567,24 @@ async function editAssignment(id, courseId, title, description, deadline, max_sc
     document.getElementById("edit-assignment-course-id").value = courseId;
     document.getElementById("edit-assignment-title").value = title;
     document.getElementById("edit-assignment-description").value = description || "";
-    document.getElementById("edit-assignment-deadline").value =
-        deadline && deadline.includes("T") ? deadline : new Date(deadline).toISOString().slice(0, 16);
+
+    //  Xử lý an toàn deadline: nếu null hoặc định dạng sai → bỏ trống
+    let formattedDeadline = "";
+    if (deadline && typeof deadline === "string" && deadline.trim() !== "") {
+        try {
+            const parsed = new Date(deadline);
+            if (!isNaN(parsed.getTime())) {
+                formattedDeadline = parsed.toISOString().slice(0, 16);
+            }
+        } catch (e) {
+            console.warn("Không thể parse deadline:", deadline);
+        }
+    }
+
+    document.getElementById("edit-assignment-deadline").value = formattedDeadline;
     document.getElementById("edit-assignment-max-score").value = max_score;
 }
+
 
 // Submit form sửa bài tập
 document.getElementById("edit-assignment-form").addEventListener("submit", async (e) => {
@@ -768,7 +793,7 @@ document.getElementById("grade-submission-form").addEventListener("submit", asyn
       return;
     }
 
-    alert("✅ " + data.message);
+    alert(data.message);
     document.getElementById("gradeSubmissionModal").style.display = "none";
 
     // Tải lại danh sách bài nộp để hiển thị điểm mới
