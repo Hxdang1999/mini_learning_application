@@ -1,0 +1,12 @@
+# version: "3.9"   ← xóa dòng này đi
+services:
+  web:
+    build: .
+    container_name: mini_learning_web
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
