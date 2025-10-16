@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 import os
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Khởi tạo các extension
 db = SQLAlchemy()
@@ -25,7 +26,7 @@ def create_app():
     # Khởi tạo các extension với app
     db.init_app(app)
     jwt.init_app(app)
-    
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     # Import models
     from .models import user, course, enrollment, material, assignment
     
